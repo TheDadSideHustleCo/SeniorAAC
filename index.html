@@ -974,10 +974,16 @@
 
   <!-- ===================== EDIT OVERLAY ===================== -->
   <div class="edit-overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="editHeading">
-    <h2 id="editHeading">✏️ Rename Button</h2>
-    <p>Type a new label — max 18 characters</p>
+    <h2 id="editHeading">✏️ Edit Button</h2>
+    <p>Label — max 18 characters</p>
     <input class="edit-input" type="text" id="editInput" maxlength="18" placeholder="Enter label…" autocomplete="off" autocorrect="off" spellcheck="false">
-    <button class="edit-save"   id="editSaveBtn">✓ Save Label</button>
+    <p style="color:#666;font-size:13px;margin:-4px 0 0">Icon — paste or type an emoji (leave blank to keep original)</p>
+    <input type="text" id="editEmojiInput" maxlength="8"
+           placeholder="😊"
+           autocomplete="off" autocorrect="off" spellcheck="false"
+           aria-label="Emoji icon (optional)"
+           style="width:88px;font-size:38px;text-align:center;background:#1a1a1a;border:2px solid #444;border-radius:12px;padding:6px 4px;color:#fff;outline:none;font-family:sans-serif;line-height:1;">
+    <button class="edit-save"   id="editSaveBtn">✓ Save</button>
     <button class="edit-cancel" id="editCancelBtn">✕ Cancel</button>
     <button class="edit-reset"  id="editResetBtn">↺ Reset to original</button>
   </div>
@@ -1504,24 +1510,59 @@
       const d = loadCats(); delete d[id];
       localStorage.setItem('aac_cats', JSON.stringify(d));
     }
+    // Speak text overrides (for custom/placeholder buttons)
+    function loadSpeaks() {
+      try { return JSON.parse(localStorage.getItem('aac_speaks') || '{}'); }
+      catch(e) { return {}; }
+    }
+    function saveSpeak(id, text) {
+      const d = loadSpeaks(); d[id] = text;
+      localStorage.setItem('aac_speaks', JSON.stringify(d));
+    }
+    function removeSpeak(id) {
+      const d = loadSpeaks(); delete d[id];
+      localStorage.setItem('aac_speaks', JSON.stringify(d));
+    }
+    // Emoji icon overrides
+    function loadEmojis() {
+      try { return JSON.parse(localStorage.getItem('aac_emojis') || '{}'); }
+      catch(e) { return {}; }
+    }
+    function saveEmoji(id, emoji) {
+      const d = loadEmojis(); d[id] = emoji;
+      localStorage.setItem('aac_emojis', JSON.stringify(d));
+    }
+    function removeEmoji(id) {
+      const d = loadEmojis(); delete d[id];
+      localStorage.setItem('aac_emojis', JSON.stringify(d));
+    }
 
     // ===================================================
     // 5. RENDER BOARDS
     // ===================================================
     function buildButton(btn) {
-      const labels = loadLabels();
-      const cats   = loadCats();
-      const label  = labels[btn.id] || btn.label;
-      const cat    = cats[btn.id]   || btn.cat;
-      const el     = document.createElement('button');
-      el.className = `comm-btn cat-${cat}`;
-      el.id        = `btn-${btn.id}`;
+      const labels  = loadLabels();
+      const cats    = loadCats();
+      const speaks  = loadSpeaks();
+      const emojis  = loadEmojis();
+      const label   = labels[btn.id]  || btn.label;
+      const cat     = cats[btn.id]    || btn.cat;
+      const speak   = speaks[btn.id]  || btn.speak;
+      const emoji   = emojis[btn.id]  || '';
+      const el      = document.createElement('button');
+      el.className  = `comm-btn cat-${cat}`;
+      el.id         = `btn-${btn.id}`;
       el.setAttribute('aria-label',   label);
       el.setAttribute('data-id',      btn.id);
-      el.setAttribute('data-speak',   btn.speak);
+      el.setAttribute('data-speak',   speak);
       el.setAttribute('data-default', btn.label);
-      el.setAttribute('data-cat',     btn.cat); // original category (for reset)
-      el.innerHTML = `${ICONS[btn.icon] || ''}
+      el.setAttribute('data-cat',     btn.cat);
+      el.setAttribute('data-icon',    btn.icon); // original icon key (for reset)
+      // Icon: saved emoji overrides the SVG
+      const iconHtml = emoji
+        ? `<span class="btn-emoji" style="font-size:40px;line-height:1">${emoji}</span>`
+        : (ICONS[btn.icon] || '');
+      el.innerHTML = `<span class="btn-icon-wrap">${iconHtml}</span>
                       <span class="btn-label">${label}</span>`;
       el.addEventListener('click', onCommBtnClick);
       return el;
@@ -1607,15 +1648,13 @@
     function playPanicChime() {
       try {
         // Create persistent context if needed (must be in user-gesture call stack)
-        if (!audioCtx) {
+        if (!audioCtx || audioCtx.state === 'closed') {
           audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        // iOS: context may be suspended even after creation — resume via promise
-        if (audioCtx.state === 'suspended') {
-          audioCtx.resume().then(playPanicNotes).catch(e => console.warn(e));
-        } else {
-          playPanicNotes();
-        }
+        // iOS fix: call resume() AND start playing synchronously in the same
+        // user-gesture call stack — do NOT use .then() as that breaks iOS unlock.
+        audioCtx.resume();
+        playPanicNotes();
       } catch(e) {
         console.warn('Web Audio not available:', e);
       }
@@ -1725,6 +1764,9 @@
       editingEl = el;
       const currentLabel = el.querySelector('.btn-label').textContent;
       document.getElementById('editInput').value = currentLabel;
+      // Pre-fill emoji if one is set
+      const emojiEl = el.querySelector('.btn-emoji');
+      document.getElementById('editEmojiInput').value = emojiEl ? emojiEl.textContent : '';
       document.getElementById('editOverlay').classList.add('open');
       setTimeout(() => document.getElementById('editInput').select(), 120);
     }
@@ -1738,31 +1780,72 @@
     function saveEdit() {
       const raw = document.getElementById('editInput').value.trim();
       if (!raw || !editingId || !editingEl) { closeEditOverlay(); return; }
+
+      // ── Label ──────────────────────────────────────────
       editingEl.querySelector('.btn-label').textContent = raw;
       editingEl.setAttribute('aria-label', raw);
       saveLabel(editingId, raw);
-      // Placeholder customized → upgrade to 'custom' category (amber styling)
+
+      // ── Emoji icon ─────────────────────────────────────
+      const emojiRaw  = document.getElementById('editEmojiInput').value.trim();
+      const emoji     = emojiRaw ? [...emojiRaw][0] : ''; // first grapheme only
+      const iconWrap  = editingEl.querySelector('.btn-icon-wrap');
+      if (iconWrap) {
+        if (emoji) {
+          iconWrap.innerHTML = `<span class="btn-emoji" style="font-size:40px;line-height:1">${emoji}</span>`;
+          saveEmoji(editingId, emoji);
+        } else {
+          // Blank = restore original SVG
+          const origIcon = editingEl.getAttribute('data-icon');
+          iconWrap.innerHTML = ICONS[origIcon] || '';
+          removeEmoji(editingId);
+        }
+      }
+
+      // ── Placeholder → custom upgrade ───────────────────
       if (editingEl.classList.contains('cat-placeholder')) {
         editingEl.classList.remove('cat-placeholder');
         editingEl.classList.add('cat-custom');
         saveCat(editingId, 'custom');
+        // Custom buttons speak the label text
+        editingEl.setAttribute('data-speak', raw);
+        saveSpeak(editingId, raw);
       }
+
       closeEditOverlay();
     }
 
     function resetEdit() {
       if (!editingId || !editingEl) return;
-      const def     = editingEl.getAttribute('data-default');
-      const origCat = editingEl.getAttribute('data-cat');
+      const def      = editingEl.getAttribute('data-default');
+      const origCat  = editingEl.getAttribute('data-cat');
+      const origIcon = editingEl.getAttribute('data-icon');
+
+      // ── Label ──────────────────────────────────────────
       editingEl.querySelector('.btn-label').textContent = def;
       editingEl.setAttribute('aria-label', def);
       removeLabel(editingId);
-      // Revert category to original (restores placeholder styling if needed)
-      const currentCat = Array.from(editingEl.classList)
-        .find(c => c.startsWith('cat-'));
+
+      // ── Emoji → restore SVG ────────────────────────────
+      const iconWrap = editingEl.querySelector('.btn-icon-wrap');
+      if (iconWrap) iconWrap.innerHTML = ICONS[origIcon] || '';
+      removeEmoji(editingId);
+
+      // ── Speak text ─────────────────────────────────────
+      // Restore original speak from data (re-read from button data)
+      removeSpeak(editingId);
+      // Rebuild this single button from source data to restore speak attr
+      const allButtons = [...CORE_BUTTONS, ...DAILY_BUTTONS, ...FEELINGS_BUTTONS,
+                          ...MEDICAL_BUTTONS, ...CUSTOM_BUTTONS];
+      const orig = allButtons.find(b => b.id === editingId);
+      if (orig) editingEl.setAttribute('data-speak', orig.speak);
+
+      // ── Category ───────────────────────────────────────
+      const currentCat = Array.from(editingEl.classList).find(c => c.startsWith('cat-'));
       if (currentCat) editingEl.classList.remove(currentCat);
       editingEl.classList.add(`cat-${origCat}`);
       removeCat(editingId);
+
       closeEditOverlay();
     }
 
@@ -1853,10 +1936,15 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v3';
+const CACHE = 'aac-v5';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
+  // Always go network-first for version checks (bypass cache entirely)
+  if (e.request.url.includes('_uc=')) {
+    e.respondWith(fetch(e.request, { cache: 'no-store' }).catch(() => new Response('', { status: 408 })));
+    return;
+  }
   e.respondWith(
     caches.open(CACHE).then(c =>
       c.match(e.request).then(cached => {
@@ -1885,7 +1973,9 @@ self.addEventListener('fetch', e => {
         version:  typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0',
         exported: new Date().toISOString(),
         labels:   loadLabels(),
-        cats:     loadCats()
+        cats:     loadCats(),
+        speaks:   loadSpeaks(),
+        emojis:   loadEmojis()
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url  = URL.createObjectURL(blob);
@@ -1907,9 +1997,9 @@ self.addEventListener('fetch', e => {
           const data = JSON.parse(e.target.result);
           if (data.labels && typeof data.labels === 'object') {
             localStorage.setItem('aac_labels', JSON.stringify(data.labels));
-            if (data.cats && typeof data.cats === 'object') {
-              localStorage.setItem('aac_cats', JSON.stringify(data.cats));
-            }
+            if (data.cats   && typeof data.cats   === 'object') localStorage.setItem('aac_cats',   JSON.stringify(data.cats));
+            if (data.speaks && typeof data.speaks === 'object') localStorage.setItem('aac_speaks', JSON.stringify(data.speaks));
+            if (data.emojis && typeof data.emojis === 'object') localStorage.setItem('aac_emojis', JSON.stringify(data.emojis));
             renderBoards();
             attachBoardListeners();
             showImportToast('✅ Labels restored successfully');
@@ -2167,7 +2257,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.1';
+    const APP_VERSION = '1.2.2';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
