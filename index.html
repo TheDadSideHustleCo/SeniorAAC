@@ -253,7 +253,7 @@
       border: none;
       border-bottom: 3px solid transparent;
       color: #555;
-      font-size: 15px;
+      font-size: 12px;
       font-weight: 700;
       cursor: pointer;
       padding: 0 10px;
@@ -282,19 +282,36 @@
       display: none;
       height: 100%;
     }
+    /* Base active board — all share height + gap */
     .board.active {
       display: grid;
       height: 100%;
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 1fr);   /* 12 buttons ÷ 3 cols = 4 equal rows */
       gap: 6px;
+    }
+    /* Core & Daily Needs — 9 buttons, 3×3 */
+    #board-core.active,
+    #board-daily.active {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+    }
+    /* Feelings & Medical — 12 buttons, 3×4 */
+    #board-feelings.active,
+    #board-medical.active {
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 1fr);
+    }
+    /* Custom Buttons — 8 buttons, 2×4 (wide, easy targets) */
+    #board-custom.active {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(4, 1fr);
     }
 
     @media (orientation: landscape) {
-      .board.active {
-        grid-template-columns: repeat(4, 1fr);
-        grid-template-rows: repeat(3, 1fr);  /* 12 buttons ÷ 4 cols = 3 equal rows */
-      }
+      #board-core.active,
+      #board-daily.active   { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+      #board-feelings.active,
+      #board-medical.active { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); }
+      #board-custom.active  { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); }
     }
 
     /* Small phone fallback — allow scroll if screen is too short */
@@ -359,6 +376,13 @@
     .cat-symptom      { background: #1a1612; border-color: #78716c; color: #d6d3d1; }
     .cat-urgent       { background: #2d0606; border-color: #dc2626; color: #fca5a5; }
     .cat-care         { background: #001e2e; border-color: #0369a1; color: #7dd3fc; }
+    /* New categories */
+    .cat-feelings     { background: #200a1a; border-color: #be185d; color: #fda4af; }
+    .cat-activity     { background: #0a1f1a; border-color: #0d9488; color: #99f6e4; }
+    .cat-placeholder  { background: #0d0d0d; border-color: #252525; color: #333333; border-style: dashed; }
+    .cat-custom       { background: #1a1200; border-color: #b45309; color: #fcd34d; }
+    /* Placeholder brighter in edit mode so it looks editable */
+    body.edit-mode .cat-placeholder { border-color: #555 !important; color: #666 !important; }
 
     /* First button of each color group — subtle inner top-glow (no layout impact) */
     .comm-btn.group-start {
@@ -467,17 +491,18 @@
     .footer {
       background: #141414;
       border-top: 2px solid #2a2a2a;
-      padding: 0 12px;
+      padding: 4px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
-      height: var(--footer-h);
-      gap: 8px;
+      min-height: var(--footer-h);
+      gap: 6px;
       flex-wrap: wrap;
     }
-    .footer-legal { color: #c0c0c0; font-size: 11px; font-weight: 700; }
-    .footer-mute  { color: #FFD700; font-size: 11px; font-weight: 700; font-style: italic; }
+    .footer-legal   { color: #c0c0c0; font-size: 11px; font-weight: 700; }
+    .footer-mute    { color: #FFD700; font-size: 11px; font-weight: 700; font-style: italic; }
+    .footer-version { color: #444; font-size: 11px; font-weight: 700; flex-shrink: 0; }
 
 
     /* ======================================
@@ -918,18 +943,20 @@
 
   <!-- ===================== TABS ===================== -->
   <div class="tabs" role="tablist" aria-label="Communication boards">
-    <button class="tab-btn active" id="tab-main" role="tab" aria-selected="true" aria-controls="board-main">
-      🏠 Daily Needs
-    </button>
-    <button class="tab-btn" id="tab-medical" role="tab" aria-selected="false" aria-controls="board-medical">
-      🏥 Medical
-    </button>
+    <button class="tab-btn active" id="tab-core"     role="tab" aria-selected="true"  aria-controls="board-core">🗣️ Core</button>
+    <button class="tab-btn"        id="tab-daily"    role="tab" aria-selected="false" aria-controls="board-daily">🏠 Daily</button>
+    <button class="tab-btn"        id="tab-feelings" role="tab" aria-selected="false" aria-controls="board-feelings">💛 Feelings</button>
+    <button class="tab-btn"        id="tab-medical"  role="tab" aria-selected="false" aria-controls="board-medical">🏥 Medical</button>
+    <button class="tab-btn"        id="tab-custom"   role="tab" aria-selected="false" aria-controls="board-custom">⭐ Custom</button>
   </div>
 
   <!-- ===================== BOARDS ===================== -->
   <div class="grid-wrap">
-    <div class="board active" id="board-main"    role="tabpanel" aria-labelledby="tab-main"></div>
-    <div class="board"        id="board-medical" role="tabpanel" aria-labelledby="tab-medical"></div>
+    <div class="board active" id="board-core"     role="tabpanel" aria-labelledby="tab-core"></div>
+    <div class="board"        id="board-daily"    role="tabpanel" aria-labelledby="tab-daily"></div>
+    <div class="board"        id="board-feelings" role="tabpanel" aria-labelledby="tab-feelings"></div>
+    <div class="board"        id="board-medical"  role="tabpanel" aria-labelledby="tab-medical"></div>
+    <div class="board"        id="board-custom"   role="tabpanel" aria-labelledby="tab-custom"></div>
   </div>
 
 
@@ -981,6 +1008,7 @@
   <footer class="footer" role="contentinfo">
     <span class="footer-legal">⚠ Not a medical device. For communication assistance only. © 2025 The Dad Side Hustle Co.</span>
     <span class="footer-mute">No sound? Check your device's Mute/Silent switch.</span>
+    <span class="footer-version" id="footerVersion"></span>
   </footer>
 
 
@@ -993,80 +1021,125 @@
     // ===================================================
     // 1. BUTTON DATA
     // ===================================================
-    // Main board — grouped: Physical → Environment → Communication → Family
-    const MAIN_GROUPS = [
+
+    // TAB 1 — Core: 9 universal communication buttons (3×3)
+    const CORE_GROUPS = [
+      {
+        label: '💬 Core Communication',
+        buttons: [
+          { id:'m9',  label:'Yes',       speak:'Yes',                              cat:'communication', icon:'yes'      },
+          { id:'m10', label:'No',        speak:'No',                               cat:'communication', icon:'no'       },
+          { id:'m11', label:'Thank You', speak:'Thank you very much',              cat:'communication', icon:'thankyou' },
+          { id:'c4',  label:'Please',    speak:'Please',                           cat:'communication', icon:'please'   },
+          { id:'c5',  label:'More',      speak:'I would like more please',         cat:'communication', icon:'more'     },
+          { id:'c6',  label:'Stop',      speak:'Please stop',                      cat:'communication', icon:'stop'     },
+          { id:'md10',label:'Help',      speak:'I need help, please come',         cat:'communication', icon:'needhelp' },
+          { id:'md12',label:'Say Again', speak:'__REPEAT__',                       cat:'communication', icon:'repeat'   },
+          { id:'c9',  label:'Wait',      speak:'Please wait just a moment',        cat:'communication', icon:'wait'     },
+        ]
+      },
+    ];
+    const CORE_BUTTONS = CORE_GROUPS.flatMap(g => g.buttons);
+
+    // TAB 2 — Daily Needs: 9 physical + environment + family buttons (3×3)
+    const DAILY_GROUPS = [
       {
         label: '🫧 Physical Needs',
         buttons: [
-          { id:'m1', label:'Water',    speak:'I would like some water please',    cat:'physical', icon:'water'    },
-          { id:'m2', label:'Hungry',   speak:'I am hungry and would like some food', cat:'physical', icon:'food'  },
-          { id:'m3', label:'Bathroom', speak:'I need to use the bathroom',        cat:'physical', icon:'bathroom' },
-          { id:'m4', label:'Cold',     speak:'I am cold, I need a blanket',       cat:'physical', icon:'cold'     },
-          { id:'m5', label:'Hot',      speak:'I am hot and need to cool down',    cat:'physical', icon:'hot'      },
+          { id:'m1', label:'Water',    speak:'I would like some water please',       cat:'physical',     icon:'water'    },
+          { id:'m2', label:'Hungry',   speak:'I am hungry and would like some food', cat:'physical',     icon:'food'     },
+          { id:'m3', label:'Bathroom', speak:'I need to use the bathroom',           cat:'physical',     icon:'bathroom' },
+          { id:'m4', label:'Cold',     speak:'I am cold, I need a blanket',          cat:'physical',     icon:'cold'     },
+          { id:'m5', label:'Hot',      speak:'I am hot and need to cool down',       cat:'physical',     icon:'hot'      },
         ]
       },
       {
         label: '🏠 Environment',
         buttons: [
-          { id:'m6', label:'Lights',      speak:'Please turn the lights on or off',  cat:'environment', icon:'lights'  },
-          { id:'m7', label:'TV / Radio',  speak:'Please turn on the TV or radio',    cat:'environment', icon:'tv'      },
-          { id:'m8', label:'Eyeglasses',  speak:'I need my eyeglasses',              cat:'environment', icon:'glasses' },
+          { id:'m6', label:'Lights',     speak:'Please turn the lights on or off', cat:'environment', icon:'lights'  },
+          { id:'m7', label:'TV / Radio', speak:'Please turn on the TV or radio',   cat:'environment', icon:'tv'      },
+          { id:'m8', label:'Eyeglasses', speak:'I need my eyeglasses',             cat:'environment', icon:'glasses' },
         ]
       },
       {
-        label: '💬 Communication',
-        buttons: [
-          { id:'m9',  label:'Yes',       speak:'Yes',                   cat:'communication', icon:'yes'      },
-          { id:'m10', label:'No',        speak:'No',                    cat:'communication', icon:'no'       },
-          { id:'m11', label:'Thank You', speak:'Thank you very much',   cat:'communication', icon:'thankyou' },
-        ]
-      },
-      {
-        label: '👨‍👩‍👧 Family & Help',
+        label: '👨‍👩‍👧 Family',
         buttons: [
           { id:'m12', label:'Call Family', speak:'Please call my family', cat:'social', icon:'phone' },
         ]
       },
     ];
-    const MAIN_BUTTONS = MAIN_GROUPS.flatMap(g => g.buttons);
+    const DAILY_BUTTONS = DAILY_GROUPS.flatMap(g => g.buttons);
 
-    // Medical board — grouped: Urgent → Symptoms → Care → Communication
+    // TAB 3 — Feelings & Activities: 12 buttons (3×4)
+    const FEELINGS_GROUPS = [
+      {
+        label: '😊 Feelings',
+        buttons: [
+          { id:'f1', label:'Happy',      speak:'I am feeling happy today',                    cat:'feelings', icon:'happy'      },
+          { id:'f2', label:'Sad',        speak:'I am feeling sad',                            cat:'feelings', icon:'sad'        },
+          { id:'f3', label:'Scared',     speak:'I am scared and frightened',                  cat:'feelings', icon:'scared'     },
+          { id:'f4', label:'Confused',   speak:'I am confused and do not understand',         cat:'feelings', icon:'confused'   },
+          { id:'f5', label:'Frustrated', speak:'I am frustrated right now',                   cat:'feelings', icon:'frustrated' },
+          { id:'f6', label:'Lonely',     speak:'I am feeling lonely',                         cat:'feelings', icon:'lonely'     },
+        ]
+      },
+      {
+        label: '🌿 Activities',
+        buttons: [
+          { id:'f7',  label:'Go Outside',    speak:'I would like to go outside',                    cat:'activity', icon:'outside'  },
+          { id:'f8',  label:'Read',           speak:'I would like to read something',                cat:'activity', icon:'read'     },
+          { id:'f9',  label:'Rest',           speak:'I need to rest and relax',                      cat:'activity', icon:'rest'     },
+          { id:'f10', label:'Puzzle / Game',  speak:'I would like to do a puzzle or play a game',    cat:'activity', icon:'puzzle'   },
+          { id:'f11', label:'Prayer & Quiet', speak:'I would like some quiet time',                  cat:'activity', icon:'prayer'   },
+          { id:'f12', label:'Look at Photos', speak:'I would like to look at some photos please',    cat:'activity', icon:'photos'   },
+        ]
+      },
+    ];
+    const FEELINGS_BUTTONS = FEELINGS_GROUPS.flatMap(g => g.buttons);
+
+    // TAB 4 — Medical: 12 buttons (3×4) — Fever + Blurry Vision added
     const MEDICAL_GROUPS = [
       {
         label: '🚨 Urgent',
         buttons: [
-          { id:'md3',  label:'Chest Pain',     speak:'I have chest pain, please get help',      cat:'urgent',  icon:'chestpain'  },
-          { id:'md5',  label:"Can't Breathe",  speak:'I am having trouble breathing',           cat:'urgent',  icon:'breathless' },
-          { id:'md10', label:'Need Help',      speak:'I need help, please come',                cat:'urgent',  icon:'needhelp'   },
+          { id:'md3', label:'Chest Pain',    speak:'I have chest pain, please get help', cat:'urgent',  icon:'chestpain'  },
+          { id:'md5', label:"Can't Breathe", speak:'I am having trouble breathing',      cat:'urgent',  icon:'breathless' },
         ]
       },
       {
         label: '🤒 Symptoms',
         buttons: [
-          { id:'md1',  label:'Dizzy',     speak:'I feel dizzy',                                 cat:'symptom', icon:'dizzy'    },
-          { id:'md2',  label:'Nausea',    speak:'I feel nauseous and sick to my stomach',       cat:'symptom', icon:'nausea'   },
-          { id:'md4',  label:'Headache',  speak:'I have a headache',                            cat:'symptom', icon:'headache' },
-          { id:'md11', label:'Allergy',   speak:'I am having an allergic reaction',             cat:'symptom', icon:'allergy'  },
+          { id:'md1',  label:'Dizzy',          speak:'I feel dizzy',                              cat:'symptom', icon:'dizzy'   },
+          { id:'md2',  label:'Nausea',          speak:'I feel nauseous and sick to my stomach',   cat:'symptom', icon:'nausea'  },
+          { id:'md4',  label:'Headache',        speak:'I have a headache',                        cat:'symptom', icon:'headache'},
+          { id:'md11', label:'Allergy',         speak:'I am having an allergic reaction',         cat:'symptom', icon:'allergy' },
+          { id:'md13', label:'Fever / Chills',  speak:'I think I have a fever, I feel hot and chilled', cat:'symptom', icon:'fever' },
+          { id:'md14', label:'Blurry Vision',   speak:'My vision is blurry, things look out of focus',  cat:'symptom', icon:'blurry'},
         ]
       },
       {
         label: '💊 Care & Treatment',
         buttons: [
-          { id:'md7',  label:'Medicine',       speak:'I need my medicine',         cat:'care', icon:'medicine'  },
-          { id:'md8',  label:'Doctor',         speak:'I need to see a doctor',     cat:'care', icon:'doctor'    },
-          { id:'md6',  label:'Tired / Sleepy', speak:'I am very tired and sleepy', cat:'care', icon:'tired'     },
-          { id:'md9',  label:"Can't Sleep",    speak:'I cannot sleep',             cat:'care', icon:'cantsleep' },
-        ]
-      },
-      {
-        label: '💬 Communication',
-        buttons: [
-          { id:'md12', label:'Say Again', speak:'__REPEAT__', cat:'communication', icon:'repeat' },
+          { id:'md7', label:'Medicine',       speak:'I need my medicine',         cat:'care', icon:'medicine'  },
+          { id:'md8', label:'Doctor',         speak:'I need to see a doctor',     cat:'care', icon:'doctor'    },
+          { id:'md6', label:'Tired / Sleepy', speak:'I am very tired and sleepy', cat:'care', icon:'tired'     },
+          { id:'md9', label:"Can't Sleep",    speak:'I cannot sleep',             cat:'care', icon:'cantsleep' },
         ]
       },
     ];
-    // Flat list kept for backwards-compatible localStorage keys
     const MEDICAL_BUTTONS = MEDICAL_GROUPS.flatMap(g => g.buttons);
+
+    // TAB 5 — Custom Buttons: 8 placeholder buttons (2×4)
+    const CUSTOM_BUTTONS = [
+      { id:'cu1', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu2', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu3', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu4', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu5', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu6', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu7', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu8', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+    ];
 
     // ===================================================
     // 2. SVG ICON LIBRARY (all inline, no external files)
@@ -1250,6 +1323,147 @@
         <path d="M18 45 L12 41 L18 37" stroke-linejoin="round" fill="currentColor"/>
       </svg>`,
 
+      // ── NEW CORE ICONS ──────────────────────────────────
+      please: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M8 30 C8 26 10 23 13 22 L20 22 L20 33 C20 37 17 40 13 40 C10 40 8 37 8 34 Z" opacity="0.8"/>
+        <path d="M40 30 C40 26 38 23 35 22 L28 22 L28 33 C28 37 31 40 35 40 C38 40 40 37 40 34 Z" opacity="0.8"/>
+        <path d="M13 22 L12 15 M16 22 L16 13 M19 22 L19 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.65"/>
+        <path d="M35 22 L36 15 M32 22 L32 13 M29 22 L29 15" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.65"/>
+      </svg>`,
+
+      more: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.2"/>
+        <rect x="21" y="10" width="6" height="28" rx="3"/>
+        <rect x="10" y="21" width="28" height="6" rx="3"/>
+      </svg>`,
+
+      stop: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <rect x="13" y="13" width="22" height="22" rx="4"/>
+      </svg>`,
+
+      wait: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.25"/>
+        <rect x="12" y="13" width="9" height="22" rx="4"/>
+        <rect x="27" y="13" width="9" height="22" rx="4"/>
+      </svg>`,
+
+      // ── FEELINGS ICONS ──────────────────────────────────
+      happy: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <circle cx="17" cy="19" r="3.5"/>
+        <circle cx="31" cy="19" r="3.5"/>
+        <path d="M12 27 Q24 41 36 27" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      sad: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <circle cx="17" cy="19" r="3.5"/>
+        <circle cx="31" cy="19" r="3.5"/>
+        <path d="M13 34 Q24 24 35 34" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M31 26 Q32 30 31 33 Q30 34 31 32 Z" opacity="0.8"/>
+      </svg>`,
+
+      scared: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <ellipse cx="17" cy="19" rx="5" ry="5.5"/>
+        <ellipse cx="31" cy="19" rx="5" ry="5.5"/>
+        <circle cx="15.5" cy="17.5" r="1.5" fill="rgba(0,0,0,0.35)" stroke="none"/>
+        <circle cx="29.5" cy="17.5" r="1.5" fill="rgba(0,0,0,0.35)" stroke="none"/>
+        <ellipse cx="24" cy="33" rx="6" ry="5"/>
+      </svg>`,
+
+      confused: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <circle cx="17" cy="19" r="3.5"/>
+        <circle cx="31" cy="19" r="3.5"/>
+        <path d="M27 12 Q32 9 36 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M14 31 Q18 27 22 31 Q26 35 30 31 Q33 28 35 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      frustrated: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <path d="M11 14 L18 18 M37 14 L30 18" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <circle cx="17" cy="20" r="3.5"/>
+        <circle cx="31" cy="20" r="3.5"/>
+        <path d="M15 33 Q24 29 33 33" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      lonely: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" opacity="0.3"/>
+        <circle cx="17" cy="20" r="3.5"/>
+        <circle cx="31" cy="20" r="3.5"/>
+        <path d="M13 16 Q17 13 21 16 M27 16 Q31 13 35 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.55"/>
+        <path d="M16 33 Q24 27 32 33" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M18 26 Q19 30 18 33 Q17.5 34 18 32 Z" opacity="0.75"/>
+      </svg>`,
+
+      // ── ACTIVITY ICONS ──────────────────────────────────
+      outside: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="36" cy="11" r="5.5"/>
+        <path d="M36 2v4M36 16v4M26 11h4M42 11h4M29 4.5l2.5 2.5M40.5 18l2.5 2.5M29 17.5l2.5-2.5M40.5 4l-2.5 2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <path d="M17 36 L25 12 L33 36 Z" opacity="0.85"/>
+        <rect x="23" y="36" width="4" height="9" rx="1.5"/>
+        <path d="M4 44 Q8 39 12 44 Q16 39 20 44" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.45"/>
+        <rect x="3" y="43" width="42" height="3" rx="1.5" opacity="0.35"/>
+      </svg>`,
+
+      read: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 12 L10 9 L5 39 L24 42 Z" opacity="0.7"/>
+        <path d="M24 12 L38 9 L43 39 L24 42 Z" opacity="0.7"/>
+        <path d="M24 12 L24 42" stroke="currentColor" stroke-width="2" opacity="0.4" fill="none"/>
+        <path d="M11 17 L21 18.5 M11 23 L20 24 M11 29 L18 30" stroke="rgba(0,0,0,0.45)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <path d="M37 17 L27 18.5 M37 23 L28 24 M37 29 L30 30" stroke="rgba(0,0,0,0.45)" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      rest: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M29 6 C21 8 15 16 15 25 C15 34 21 42 31 43 C19 44 9 35 9 24 C9 13 18 5 29 6Z"/>
+        <path d="M33 10 L41 10 L33 18 L41 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M35 23 L41 23 L35 29 L41 29" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6"/>
+      </svg>`,
+
+      puzzle: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M8 8 L8 21 C8 21 6 21 5 23 C4 25 4 27 5 29 C6 31 8 30 8 30 L8 40 L20 40 C20 42 22 44 24 43 C26 44 28 42 28 40 L40 40 L40 28 C42 28 44 26 43 24 C44 22 42 20 40 20 L40 8 Z" opacity="0.85"/>
+      </svg>`,
+
+      prayer: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 4 C22 9 18 13 19 18 C20 22 22 23 24 23 C26 23 28 22 29 18 C30 13 26 9 24 4Z" opacity="0.9"/>
+        <rect x="19" y="23" width="10" height="18" rx="2" opacity="0.8"/>
+        <ellipse cx="24" cy="42" rx="9" ry="3" opacity="0.45"/>
+        <path d="M15 17 L12 14 M33 17 L36 14 M14 21 L10 21 M34 21 L38 21" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.38"/>
+      </svg>`,
+
+      photos: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="5" y="8" width="38" height="32" rx="4" opacity="0.9"/>
+        <rect x="9" y="12" width="30" height="24" rx="2" fill="#000" opacity="0.55"/>
+        <rect x="9" y="12" width="30" height="13" rx="2" opacity="0.4"/>
+        <path d="M9 36 L18 22 L25 30 L30 23 L39 36 Z" opacity="0.68"/>
+        <circle cx="34" cy="17" r="4" opacity="0.85"/>
+      </svg>`,
+
+      // ── MEDICAL NEW ICONS ───────────────────────────────
+      fever: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="20" y="4" width="8" height="28" rx="4" opacity="0.3"/>
+        <rect x="22" y="14" width="4" height="18" rx="2"/>
+        <circle cx="24" cy="38" r="8"/>
+        <path d="M28 12 L32 12 M28 18 L32 18 M28 24 L32 24 M28 30 L32 30" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.55"/>
+      </svg>`,
+
+      blurry: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" aria-hidden="true">
+        <path d="M5 24 Q12 12 24 12 Q36 12 43 24 Q36 36 24 36 Q12 36 5 24Z" stroke-width="2.5" opacity="0.7"/>
+        <circle cx="24" cy="24" r="7" stroke-width="2.5"/>
+        <circle cx="24" cy="24" r="3.5" fill="currentColor" stroke="none"/>
+        <path d="M8 19 Q12 15 16 19 Q20 23 24 19" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <path d="M24 19 Q28 15 32 19 Q36 23 40 19" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+        <path d="M8 29 Q12 25 16 29 Q20 33 24 29 Q28 25 32 29 Q36 33 40 29" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      </svg>`,
+
+      // ── PLACEHOLDER ICON ────────────────────────────────
+      placeholder: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <circle cx="24" cy="24" r="18" stroke-dasharray="5 4" opacity="0.45"/>
+        <path d="M24 14 L24 34 M14 24 L34 24" stroke-linecap="round" opacity="0.45"/>
+      </svg>`,
+
     }; // end ICONS
 
     // ===================================================
@@ -1261,6 +1475,7 @@
     let editingEl    = null;
     const DEBOUNCE   = 500; // ms — anti-tremor
     const lastClick  = {};  // { buttonId: timestamp }
+    let audioCtx     = null; // persistent Web Audio context for iOS
 
     // ===================================================
     // 4. LOCAL STORAGE HELPERS
@@ -1270,14 +1485,24 @@
       catch(e) { return {}; }
     }
     function saveLabel(id, text) {
-      const d = loadLabels();
-      d[id] = text;
+      const d = loadLabels(); d[id] = text;
       localStorage.setItem('aac_labels', JSON.stringify(d));
     }
     function removeLabel(id) {
-      const d = loadLabels();
-      delete d[id];
+      const d = loadLabels(); delete d[id];
       localStorage.setItem('aac_labels', JSON.stringify(d));
+    }
+    function loadCats() {
+      try { return JSON.parse(localStorage.getItem('aac_cats') || '{}'); }
+      catch(e) { return {}; }
+    }
+    function saveCat(id, cat) {
+      const d = loadCats(); d[id] = cat;
+      localStorage.setItem('aac_cats', JSON.stringify(d));
+    }
+    function removeCat(id) {
+      const d = loadCats(); delete d[id];
+      localStorage.setItem('aac_cats', JSON.stringify(d));
     }
 
     // ===================================================
@@ -1285,14 +1510,17 @@
     // ===================================================
     function buildButton(btn) {
       const labels = loadLabels();
+      const cats   = loadCats();
       const label  = labels[btn.id] || btn.label;
+      const cat    = cats[btn.id]   || btn.cat;
       const el     = document.createElement('button');
-      el.className = `comm-btn cat-${btn.cat}`;
+      el.className = `comm-btn cat-${cat}`;
       el.id        = `btn-${btn.id}`;
-      el.setAttribute('aria-label', label);
-      el.setAttribute('data-id',    btn.id);
-      el.setAttribute('data-speak', btn.speak);
+      el.setAttribute('aria-label',   label);
+      el.setAttribute('data-id',      btn.id);
+      el.setAttribute('data-speak',   btn.speak);
       el.setAttribute('data-default', btn.label);
+      el.setAttribute('data-cat',     btn.cat); // original category (for reset)
       el.innerHTML = `${ICONS[btn.icon] || ''}
                       <span class="btn-label">${label}</span>`;
       el.addEventListener('click', onCommBtnClick);
@@ -1304,17 +1532,23 @@
       groups.forEach((group) => {
         group.buttons.forEach((b, i) => {
           const el = buildButton(b);
-          // Mark the first button of each group with a subtle inner-glow
-          // (no layout impact — color blocks provide the visual grouping)
           if (i === 0) el.classList.add('group-start');
           container.appendChild(el);
         });
       });
     }
 
+    function renderFlatBoard(buttons, container) {
+      container.innerHTML = '';
+      buttons.forEach(b => container.appendChild(buildButton(b)));
+    }
+
     function renderBoards() {
-      renderGroupedBoard(MAIN_GROUPS,    document.getElementById('board-main'));
-      renderGroupedBoard(MEDICAL_GROUPS, document.getElementById('board-medical'));
+      renderGroupedBoard(CORE_GROUPS,     document.getElementById('board-core'));
+      renderGroupedBoard(DAILY_GROUPS,    document.getElementById('board-daily'));
+      renderGroupedBoard(FEELINGS_GROUPS, document.getElementById('board-feelings'));
+      renderGroupedBoard(MEDICAL_GROUPS,  document.getElementById('board-medical'));
+      renderFlatBoard(CUSTOM_BUTTONS,     document.getElementById('board-custom'));
     }
 
     // ===================================================
@@ -1340,38 +1574,48 @@
     }
 
     // ===================================================
-    // 7. PANIC CHIME  (Web Audio API — no external files)
+    // 7. PANIC CHIME  (Web Audio API — persistent context for iOS)
     // ===================================================
+    function playPanicNotes() {
+      try {
+        const notes = [
+          { f: 880,  t: 0.00, d: 0.22 },
+          { f: 660,  t: 0.28, d: 0.18 },
+          { f: 880,  t: 0.52, d: 0.22 },
+          { f: 660,  t: 0.78, d: 0.18 },
+          { f: 1047, t: 1.02, d: 0.45 },
+        ];
+        notes.forEach(n => {
+          const osc  = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.type            = 'sine';
+          osc.frequency.value = n.f;
+          gain.gain.setValueAtTime(0, audioCtx.currentTime + n.t);
+          gain.gain.linearRampToValueAtTime(0.85, audioCtx.currentTime + n.t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + n.t + n.d);
+          osc.start(audioCtx.currentTime + n.t);
+          osc.stop(audioCtx.currentTime + n.t + n.d + 0.05);
+        });
+        flashButton(document.getElementById('panicBtn'));
+      } catch(e) {
+        console.warn('Panic chime error:', e);
+      }
+    }
+
     function playPanicChime() {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-        // Resume context if suspended (iOS requirement)
-        if (ctx.state === 'suspended') ctx.resume();
-
-        const notes = [
-          { f: 880, t: 0.00, d: 0.22 },
-          { f: 660, t: 0.28, d: 0.18 },
-          { f: 880, t: 0.52, d: 0.22 },
-          { f: 660, t: 0.78, d: 0.18 },
-          { f: 1047,t: 1.02, d: 0.45 },
-        ];
-
-        notes.forEach(n => {
-          const osc  = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.type          = 'sine';
-          osc.frequency.value = n.f;
-          gain.gain.setValueAtTime(0, ctx.currentTime + n.t);
-          gain.gain.linearRampToValueAtTime(0.85, ctx.currentTime + n.t + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
-          osc.start(ctx.currentTime + n.t);
-          osc.stop(ctx.currentTime + n.t + n.d + 0.05);
-        });
-
-        flashButton(document.getElementById('panicBtn'));
+        // Create persistent context if needed (must be in user-gesture call stack)
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        // iOS: context may be suspended even after creation — resume via promise
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().then(playPanicNotes).catch(e => console.warn(e));
+        } else {
+          playPanicNotes();
+        }
       } catch(e) {
         console.warn('Web Audio not available:', e);
       }
@@ -1396,6 +1640,12 @@
       lastClick[id] = now;
 
       const speakText = el.getAttribute('data-speak');
+
+      // Placeholder: just flash — no speech (hint: enter Edit to customize)
+      if (!speakText || speakText === '__PLACEHOLDER__') {
+        flashButton(el);
+        return;
+      }
 
       // Special: "Say Again" repeats last spoken phrase
       if (speakText === '__REPEAT__') {
@@ -1491,15 +1741,28 @@
       editingEl.querySelector('.btn-label').textContent = raw;
       editingEl.setAttribute('aria-label', raw);
       saveLabel(editingId, raw);
+      // Placeholder customized → upgrade to 'custom' category (amber styling)
+      if (editingEl.classList.contains('cat-placeholder')) {
+        editingEl.classList.remove('cat-placeholder');
+        editingEl.classList.add('cat-custom');
+        saveCat(editingId, 'custom');
+      }
       closeEditOverlay();
     }
 
     function resetEdit() {
       if (!editingId || !editingEl) return;
-      const def = editingEl.getAttribute('data-default');
+      const def     = editingEl.getAttribute('data-default');
+      const origCat = editingEl.getAttribute('data-cat');
       editingEl.querySelector('.btn-label').textContent = def;
       editingEl.setAttribute('aria-label', def);
       removeLabel(editingId);
+      // Revert category to original (restores placeholder styling if needed)
+      const currentCat = Array.from(editingEl.classList)
+        .find(c => c.startsWith('cat-'));
+      if (currentCat) editingEl.classList.remove(currentCat);
+      editingEl.classList.add(`cat-${origCat}`);
+      removeCat(editingId);
       closeEditOverlay();
     }
 
@@ -1521,6 +1784,10 @@
     // 12. EVENT LISTENERS
     // ===================================================
     document.getElementById('panicBtn').addEventListener('click', playPanicChime);
+    document.getElementById('panicBtn').addEventListener('touchstart', () => {
+      // Pre-create AudioContext on first touch of panic button (iOS unlock)
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }, { passive: true });
     document.getElementById('repeatBtn').addEventListener('click', () => {
       if (lastSpoken) speak(lastSpoken, document.getElementById('repeatBtn'));
     });
@@ -1535,8 +1802,9 @@
       document.getElementById('importFileInput').click()
     );
     document.getElementById('importFileInput').addEventListener('change', importData);
-    document.getElementById('tab-main').addEventListener('click', () => switchTab('main'));
-    document.getElementById('tab-medical').addEventListener('click', () => switchTab('medical'));
+    ['core','daily','feelings','medical','custom'].forEach(name => {
+      document.getElementById(`tab-${name}`).addEventListener('click', () => switchTab(name));
+    });
     document.getElementById('editSaveBtn').addEventListener('click', saveEdit);
     document.getElementById('editCancelBtn').addEventListener('click', closeEditOverlay);
     document.getElementById('editResetBtn').addEventListener('click', resetEdit);
@@ -1585,7 +1853,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v1';
+const CACHE = 'aac-v3';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -1612,12 +1880,12 @@ self.addEventListener('fetch', e => {
     // EXPORT / IMPORT (in Edit Mode via banner buttons)
     // ===================================================
     function exportData() {
-      const labels = loadLabels();
       const data = {
         product:  'Senior AAC Communication Board',
         version:  typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0',
         exported: new Date().toISOString(),
-        labels:   labels
+        labels:   loadLabels(),
+        cats:     loadCats()
       };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url  = URL.createObjectURL(blob);
@@ -1639,6 +1907,9 @@ self.addEventListener('fetch', e => {
           const data = JSON.parse(e.target.result);
           if (data.labels && typeof data.labels === 'object') {
             localStorage.setItem('aac_labels', JSON.stringify(data.labels));
+            if (data.cats && typeof data.cats === 'object') {
+              localStorage.setItem('aac_cats', JSON.stringify(data.cats));
+            }
             renderBoards();
             attachBoardListeners();
             showImportToast('✅ Labels restored successfully');
@@ -1875,9 +2146,14 @@ self.addEventListener('fetch', e => {
     renderBoards();
     attachBoardListeners(); // wire tap/hold listeners after boards are built
 
-    // Wake speech synthesis engine (some browsers are lazy)
+    // Wake speech synthesis + pre-create AudioContext on very first touch (iOS unlock)
     window.addEventListener('touchstart', function wakeAudio() {
       window.speechSynthesis.cancel();
+      // Pre-create persistent AudioContext so PANIC button works on first press
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+      }
+      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
       window.removeEventListener('touchstart', wakeAudio);
     }, { once: true });
 
@@ -1891,8 +2167,11 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.1.0';
+    const APP_VERSION = '1.2.1';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
+
+    // Stamp version in footer
+    document.getElementById('footerVersion').textContent = 'v' + APP_VERSION;
 
     function hasCustomLabels() {
       const labels = loadLabels();
