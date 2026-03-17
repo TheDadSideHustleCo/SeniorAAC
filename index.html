@@ -1,0 +1,1974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="AAC Board">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Senior Care AAC Communication Board — offline communication tool for non-verbal seniors. No Wi-Fi required.">
+  <title>Senior AAC Communication Board</title>
+
+  <style>
+    /* ===========================================
+       SENIOR AAC COMMUNICATION BOARD  v1.0
+       One-time purchase · No subscription · No Wi-Fi
+       =========================================== */
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg:            #000000;
+      --surface:       #111111;
+      --surface2:      #1a1a1a;
+      --border:        #2a2a2a;
+      --text:          #ffffff;
+      --gold:          #FFD700;
+      --panic-bg:      #b91c1c;
+      --panic-border:  #ef4444;
+      --panic-text:    #ffffff;
+      --flash:         #FFD700;
+      --radius-btn:    14px;
+      --radius-sm:     10px;
+      --header-h:      68px;
+      --pain-h:        92px;
+      --tab-h:         46px;
+      --footer-h:      36px;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Verdana, Helvetica, sans-serif;
+      overflow: hidden;
+      touch-action: manipulation;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    /* ======================================
+       HEADER
+    ====================================== */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: var(--surface);
+      border-bottom: 2px solid #330000;
+      flex-shrink: 0;
+      height: var(--header-h);
+    }
+
+    .btn-panic {
+      flex: 1;
+      background: var(--panic-bg);
+      color: var(--panic-text);
+      border: 3px solid var(--panic-border);
+      border-radius: var(--radius-btn);
+      padding: 0 14px;
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 52px;
+      transition: background 0.1s, transform 0.1s;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .btn-panic:active  { background: #dc2626; transform: scale(0.97); }
+    .btn-panic svg     { width: 26px; height: 26px; flex-shrink: 0; }
+
+    .btn-icon-sm {
+      background: var(--surface2);
+      border: 2px solid #333;
+      border-radius: var(--radius-sm);
+      width: 58px;
+      height: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      cursor: pointer;
+      color: #888;
+      font-size: 11px;
+      font-weight: bold;
+      flex-shrink: 0;
+      transition: border-color 0.2s, color 0.2s;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .btn-icon-sm svg { width: 22px; height: 22px; }
+
+    #repeatBtn { color: var(--gold); border-color: #554400; }
+    #repeatBtn:active { background: #221a00; }
+
+    #lockBtn.unlocked { color: var(--gold); border-color: var(--gold); }
+    #lockBtn:active   { background: #221a00; }
+
+    /* ======================================
+       EDIT MODE BANNER
+    ====================================== */
+    .edit-banner {
+      display: none;
+      background: var(--gold);
+      color: #000;
+      padding: 5px 10px;
+      font-weight: 900;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    body.edit-mode .edit-banner { display: flex; }
+
+    .edit-banner-text { flex: 1; }
+
+    .edit-banner-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .edit-banner-btn {
+      background: rgba(0,0,0,0.15);
+      color: #000;
+      border: 2px solid rgba(0,0,0,0.25);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      font-family: Arial, Verdana, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      white-space: nowrap;
+    }
+    .edit-banner-btn:active { background: rgba(0,0,0,0.3); }
+
+    /* Long-hold ring on lock button when entering edit mode */
+    #lockBtn.lock-holding {
+      animation: holdBuild 2s linear forwards;
+      border-color: var(--gold) !important;
+      color: var(--gold) !important;
+    }
+
+    /* ======================================
+       PAIN SCALE ROW — Always Visible
+    ====================================== */
+    .pain-row {
+      display: flex;
+      align-items: stretch;
+      gap: 7px;
+      padding: 7px 10px;
+      background: #0d0d0d;
+      border-bottom: 2px solid var(--border);
+      flex-shrink: 0;
+      height: var(--pain-h);
+    }
+
+    .pain-label-vert {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      color: #555;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 2px;
+      flex-shrink: 0;
+    }
+
+    .pain-btn {
+      flex: 1;
+      border: 2px solid;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      padding: 4px 2px;
+      font-weight: 900;
+      transition: transform 0.1s, filter 0.1s;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .pain-btn:active { transform: scale(0.95); filter: brightness(1.2); }
+    .pain-btn svg    { width: 30px; height: 30px; flex-shrink: 0; }
+    .pain-num  { font-size: 15px; font-weight: 900; line-height: 1; }
+    .pain-word { font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+                 text-transform: uppercase; line-height: 1; text-align: center; }
+
+    /* 5-level Wong-Baker inspired scale — green → red */
+    .pain-0 { background: #022b12; border-color: #16a34a; color: #86efac; }
+    .pain-1 { background: #1a3300; border-color: #65a30d; color: #bef264; }
+    .pain-2 { background: #3d3000; border-color: #ca8a04; color: #fde047; }
+    .pain-3 { background: #431200; border-color: #ea580c; color: #fdba74; }
+    .pain-4 { background: #3b0000; border-color: #dc2626; color: #fca5a5; }
+
+    /* ======================================
+       TABS
+    ====================================== */
+    .tabs {
+      display: flex;
+      background: #090909;
+      border-bottom: 2px solid var(--border);
+      flex-shrink: 0;
+      height: var(--tab-h);
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #555;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 10px;
+      transition: color 0.15s, border-color 0.15s, background 0.15s;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+      background: #111;
+    }
+
+    /* ======================================
+       GRID / BOARDS
+    ====================================== */
+    .grid-wrap {
+      flex: 1;
+      min-height: 0;        /* required for flex child to shrink correctly */
+      overflow: hidden;
+      padding: 6px;
+    }
+
+    .board {
+      display: none;
+      height: 100%;
+    }
+    .board.active {
+      display: grid;
+      height: 100%;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(4, 1fr);   /* 12 buttons ÷ 3 cols = 4 equal rows */
+      gap: 6px;
+    }
+
+    @media (orientation: landscape) {
+      .board.active {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(3, 1fr);  /* 12 buttons ÷ 4 cols = 3 equal rows */
+      }
+    }
+
+    /* Small phone fallback — allow scroll if screen is too short */
+    @media (max-height: 650px) {
+      .grid-wrap { overflow-y: auto; }
+      .board.active {
+        height: auto;
+        grid-template-rows: unset;
+        grid-auto-rows: minmax(86px, 1fr);
+      }
+    }
+
+    /* ======================================
+       COMM BUTTONS
+    ====================================== */
+    .comm-btn {
+      border: 2px solid;
+      border-radius: var(--radius-btn);
+      padding: 8px 6px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 100%;            /* fill the grid row track */
+      transition: transform 0.1s, filter 0.1s;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .comm-btn:active { transform: scale(0.94); filter: brightness(1.15); }
+
+    .comm-btn svg   { width: 46px; height: 46px; flex-shrink: 0; }
+
+    .btn-label {
+      font-size: 17px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.2;
+      word-break: break-word;
+      letter-spacing: 0.3px;
+    }
+
+    /* BUTTON FLASH — visual confirmation */
+    @keyframes btnFlash {
+      0%   { outline: 0px solid transparent; }
+      30%  { outline: 5px solid var(--flash); background-color: #3a2d00 !important; }
+      100% { outline: 0px solid transparent; }
+    }
+    .comm-btn.flashing {
+      animation: btnFlash 0.5s ease-out forwards;
+    }
+
+    /* CATEGORY COLOR SYSTEM */
+    .cat-physical     { background: #0a1f3d; border-color: #2563eb; color: #93c5fd; }
+    .cat-environment  { background: #1a0f3d; border-color: #7c3aed; color: #c4b5fd; }
+    .cat-communication{ background: #022b1a; border-color: #059669; color: #6ee7b7; }
+    .cat-social       { background: #2c1000; border-color: #d97706; color: #fcd34d; }
+    .cat-symptom      { background: #1a1612; border-color: #78716c; color: #d6d3d1; }
+    .cat-urgent       { background: #2d0606; border-color: #dc2626; color: #fca5a5; }
+    .cat-care         { background: #001e2e; border-color: #0369a1; color: #7dd3fc; }
+
+    /* First button of each color group — subtle inner top-glow (no layout impact) */
+    .comm-btn.group-start {
+      box-shadow: inset 0 3px 0 0 rgba(255,255,255,0.18);
+    }
+
+    /* EDIT MODE — dashed borders & pencil hint */
+    body.edit-mode .comm-btn {
+      border-style: dashed;
+      cursor: pointer;
+    }
+    body.edit-mode .comm-btn::after {
+      content: "✏";
+      position: absolute;
+      top: 5px;
+      right: 7px;
+      font-size: 13px;
+      opacity: 0.55;
+    }
+
+    /* ======================================
+       EDIT OVERLAY
+    ====================================== */
+    .edit-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 200;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 24px 20px;
+    }
+    .edit-overlay.open { display: flex; }
+
+    .edit-overlay h2 {
+      color: var(--gold);
+      font-size: 26px;
+      font-weight: 900;
+      text-align: center;
+    }
+    .edit-overlay p {
+      color: #888;
+      font-size: 15px;
+      text-align: center;
+    }
+
+    .edit-input {
+      width: 100%;
+      max-width: 420px;
+      background: #1a1a1a;
+      border: 3px solid var(--gold);
+      border-radius: var(--radius-btn);
+      color: #fff;
+      font-size: 30px;
+      font-weight: 900;
+      padding: 14px 20px;
+      text-align: center;
+      outline: none;
+      font-family: Arial, Verdana, sans-serif;
+    }
+    .edit-input:focus { border-color: #fff; }
+
+    .edit-save {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: var(--radius-btn);
+      padding: 15px 40px;
+      font-size: 22px;
+      font-weight: 900;
+      cursor: pointer;
+      min-width: 220px;
+      font-family: Arial, Verdana, sans-serif;
+    }
+    .edit-save:active { filter: brightness(0.85); }
+
+    .edit-cancel {
+      background: #222;
+      color: #aaa;
+      border: 2px solid #333;
+      border-radius: var(--radius-btn);
+      padding: 11px 30px;
+      font-size: 17px;
+      cursor: pointer;
+      min-width: 160px;
+      font-family: Arial, Verdana, sans-serif;
+    }
+
+    .edit-reset {
+      background: transparent;
+      color: #555;
+      border: 1px solid #333;
+      border-radius: var(--radius-sm);
+      padding: 7px 18px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: Arial, Verdana, sans-serif;
+    }
+
+    /* ======================================
+       FOOTER
+    ====================================== */
+    .footer {
+      background: #141414;
+      border-top: 2px solid #2a2a2a;
+      padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      height: var(--footer-h);
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .footer-legal { color: #c0c0c0; font-size: 11px; font-weight: 700; }
+    .footer-mute  { color: #FFD700; font-size: 11px; font-weight: 700; font-style: italic; }
+
+
+    /* ======================================
+       TYPE TO SPEAK BAR
+    ====================================== */
+    .tts-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      background: #0a0a0a;
+      border-top: 2px solid #2a2a2a;
+      flex-shrink: 0;
+      height: 64px;
+    }
+
+    .tts-input {
+      flex: 1;
+      background: #1a1a1a;
+      border: 2px solid #444;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 20px;
+      font-weight: 700;
+      padding: 8px 14px;
+      font-family: Arial, Verdana, sans-serif;
+      outline: none;
+      min-width: 0;
+    }
+    .tts-input:focus { border-color: var(--gold); }
+    .tts-input::placeholder { color: #3a3a3a; font-style: italic; font-size: 16px; font-weight: 400; }
+
+    .tts-speak-btn {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 0 16px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      height: 48px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: Arial, Verdana, sans-serif;
+      letter-spacing: 0.5px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .tts-speak-btn:active { filter: brightness(0.82); }
+
+    .tts-clear-btn {
+      background: #1a1a1a;
+      color: #555;
+      border: 2px solid #2a2a2a;
+      border-radius: 10px;
+      width: 44px;
+      height: 48px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .tts-clear-btn:active { background: #2a2a2a; color: #888; }
+
+    /* ======================================
+       HOLD-TO-SELECT MODE
+    ====================================== */
+    @keyframes holdBuild {
+      0%   { box-shadow: 0 0 0 0px rgba(255,215,0,0),  inset 0 0 0 0px rgba(255,215,0,0); }
+      40%  { box-shadow: 0 0 0 3px rgba(255,215,0,0.5), inset 0 0 0 2px rgba(255,215,0,0.12); }
+      100% { box-shadow: 0 0 0 6px rgba(255,215,0,0.9), inset 0 0 0 4px rgba(255,215,0,0.25); }
+    }
+
+    .comm-btn.holding {
+      animation: holdBuild 0.5s linear forwards;
+      border-color: var(--gold) !important;
+    }
+
+    #holdBtn.hold-active {
+      color: var(--gold);
+      border-color: var(--gold);
+      background: #221a00;
+    }
+
+    /* ======================================
+       WHITEBOARD MODE
+    ====================================== */
+    .wb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 300;
+      flex-direction: column;
+    }
+    .wb-overlay.open { display: flex; }
+
+    .wb-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: #111;
+      border-bottom: 2px solid #2a2a2a;
+      flex-shrink: 0;
+    }
+
+    .wb-label {
+      color: #555;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .wb-color-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 3px solid #333;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: transform 0.12s, border-color 0.12s;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .wb-color-btn.active { border-color: var(--gold); transform: scale(1.2); }
+
+    .wb-sep {
+      width: 1px;
+      height: 32px;
+      background: #2a2a2a;
+      flex-shrink: 0;
+    }
+
+    .wb-tool-btn {
+      background: #1a1a1a;
+      border: 2px solid #333;
+      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      flex-shrink: 0;
+    }
+    .wb-tool-btn.active { border-color: var(--gold); background: #221a00; }
+    .wb-tool-btn:active { filter: brightness(1.3); }
+
+    .wb-clear-btn {
+      background: #1a1a1a;
+      color: #888;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 0 14px;
+      height: 44px;
+      font-size: 13px;
+      font-weight: 900;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-family: Arial, Verdana, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .wb-clear-btn:active { background: #2a2a2a; }
+
+    .wb-close-btn {
+      background: var(--panic-bg);
+      color: #fff;
+      border: 2px solid var(--panic-border);
+      border-radius: 10px;
+      padding: 0 18px;
+      height: 44px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-left: auto;
+      font-family: Arial, Verdana, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .wb-close-btn:active { filter: brightness(0.85); }
+
+    #wbCanvas {
+      flex: 1;
+      width: 100%;
+      display: block;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .wb-hint {
+      text-align: center;
+      color: #1f1f1f;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px;
+      letter-spacing: 1px;
+      flex-shrink: 0;
+    }
+    /* ======================================
+       ACCESSIBILITY — FOCUS RINGS
+    ====================================== */
+    .comm-btn:focus-visible,
+    .btn-panic:focus-visible,
+    .pain-btn:focus-visible,
+    .tab-btn:focus-visible,
+    .btn-icon-sm:focus-visible {
+      outline: 4px solid var(--gold);
+      outline-offset: 2px;
+    }
+
+    /* ======================================
+       RESPONSIVE — small screens
+    ====================================== */
+    @media (max-width: 380px) {
+      .btn-label { font-size: 14px; }
+      .comm-btn svg { width: 36px; height: 36px; }
+      .btn-panic { font-size: 18px; }
+    }
+
+    /* ======================================
+       UPDATE AVAILABLE MODAL
+    ====================================== */
+    .update-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 400;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .update-overlay.active { display: flex; }
+
+    .update-modal {
+      background: #1a1a1a;
+      border: 2px solid #333;
+      border-radius: 20px;
+      padding: 24px 22px;
+      width: 100%;
+      max-width: 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+    }
+
+    .update-modal-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--gold);
+      text-align: center;
+    }
+
+    .update-modal p {
+      font-size: 14px;
+      color: #ccc;
+      text-align: center;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    .update-warning-box {
+      background: #2d1f00;
+      border: 1.5px solid #f59e0b;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .update-warning-box p { text-align: left; }
+    .update-warning-box strong { color: #fbbf24; }
+
+    .update-btn-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .update-btn {
+      border: none;
+      border-radius: 10px;
+      padding: 13px 10px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      font-family: Arial, Verdana, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+    .update-btn-primary  { background: var(--gold); color: #000; }
+    .update-btn-export   { background: #d97706; color: #fff; display: none; }
+    .update-btn-later    { background: #1f1f1f; color: #888; border: 2px solid #333; }
+    .update-btn:active   { filter: brightness(0.85); }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="header" role="banner">
+    <button class="btn-panic" id="panicBtn" aria-label="Emergency — Play alert chime">
+      <!-- Bell icon -->
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V11c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/>
+      </svg>
+      HELP / PANIC
+    </button>
+
+    <button class="btn-icon-sm" id="repeatBtn" aria-label="Repeat last phrase" title="Repeat Last">
+      <!-- Repeat arrows -->
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+      </svg>
+      <span>Repeat</span>
+    </button>
+
+
+    <button class="btn-icon-sm" id="holdBtn" aria-label="Toggle hold-to-select mode" title="Hold Mode">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:22px;height:22px">
+        <path d="M13 1.07V9h7c0-4.08-3.05-7.44-7-7.93zM4 15c0 4.42 3.58 8 8 8s8-3.58 8-8v-4H4v4zm7-13.93C7.05 1.56 4 4.92 4 9h7V1.07z"/>
+      </svg>
+      <span id="holdLabel">Hold</span>
+    </button>
+
+    <button class="btn-icon-sm" id="wbBtn" aria-label="Open whiteboard drawing mode" title="Whiteboard">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width:22px;height:22px">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+      </svg>
+      <span>Draw</span>
+    </button>
+    <button class="btn-icon-sm" id="lockBtn" aria-label="Toggle edit mode" title="Edit Mode">
+      <svg id="lockIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <path id="lockPath" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+      </svg>
+      <span id="lockLabel">Edit</span>
+    </button>
+  </header>
+
+  <!-- ===================== EDIT BANNER ===================== -->
+  <div class="edit-banner" role="status" aria-live="polite">
+    <span class="edit-banner-text">✏️ EDIT MODE — Tap any button to rename it</span>
+    <div class="edit-banner-actions">
+      <button class="edit-banner-btn" id="exportBtn" aria-label="Export button labels to file">💾 Export</button>
+      <button class="edit-banner-btn" id="importBtn" aria-label="Import button labels from file">📂 Import</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none" aria-hidden="true">
+    </div>
+  </div>
+
+  <!-- ===================== PAIN SCALE (Wong-Baker 0–10) ===================== -->
+  <div class="pain-row" role="group" aria-label="Pain scale 0 to 10 — always available">
+    <span class="pain-label-vert" aria-hidden="true">PAIN</span>
+
+    <!-- Level 0: No Pain -->
+    <button class="pain-btn pain-0" data-speak="I have no pain right now, zero out of ten" aria-label="No pain — level 0 out of 10">
+      <span class="pain-num">0</span>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="#022b12" stroke="#16a34a" stroke-width="2"/>
+        <circle cx="11" cy="13" r="2" fill="#86efac"/>
+        <circle cx="21" cy="13" r="2" fill="#86efac"/>
+        <path d="M9 20 Q16 27 23 20" stroke="#86efac" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="pain-word">No Pain</span>
+    </button>
+
+    <!-- Level 1–3: Mild -->
+    <button class="pain-btn pain-1" data-speak="I have mild pain, about two out of ten" aria-label="Mild pain — level 1 to 3 out of 10">
+      <span class="pain-num">1–3</span>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="#1a3300" stroke="#65a30d" stroke-width="2"/>
+        <circle cx="11" cy="13" r="2" fill="#bef264"/>
+        <circle cx="21" cy="13" r="2" fill="#bef264"/>
+        <path d="M10 21 Q16 25 22 21" stroke="#bef264" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="pain-word">Mild</span>
+    </button>
+
+    <!-- Level 4–6: Moderate -->
+    <button class="pain-btn pain-2" data-speak="I have moderate pain, about five out of ten" aria-label="Moderate pain — level 4 to 6 out of 10">
+      <span class="pain-num">4–6</span>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="#3d3000" stroke="#ca8a04" stroke-width="2"/>
+        <circle cx="11" cy="13" r="2" fill="#fde047"/>
+        <circle cx="21" cy="13" r="2" fill="#fde047"/>
+        <line x1="10" y1="22" x2="22" y2="22" stroke="#fde047" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <span class="pain-word">Moderate</span>
+    </button>
+
+    <!-- Level 7–8: Severe -->
+    <button class="pain-btn pain-3" data-speak="I have severe pain, about seven out of ten, please help" aria-label="Severe pain — level 7 to 8 out of 10">
+      <span class="pain-num">7–8</span>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="#431200" stroke="#ea580c" stroke-width="2"/>
+        <circle cx="11" cy="12" r="2" fill="#fdba74"/>
+        <circle cx="21" cy="12" r="2" fill="#fdba74"/>
+        <path d="M10 24 Q16 18 22 24" stroke="#fdba74" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="pain-word">Severe</span>
+    </button>
+
+    <!-- Level 9–10: Worst -->
+    <button class="pain-btn pain-4" data-speak="My pain is unbearable, ten out of ten. Please get help now" aria-label="Worst pain — level 9 to 10 out of 10">
+      <span class="pain-num">9–10</span>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <circle cx="16" cy="16" r="14" fill="#3b0000" stroke="#dc2626" stroke-width="2"/>
+        <!-- X eyes -->
+        <line x1="8"  y1="9"  x2="14" y2="15" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
+        <line x1="14" y1="9"  x2="8"  y2="15" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
+        <line x1="18" y1="9"  x2="24" y2="15" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
+        <line x1="24" y1="9"  x2="18" y2="15" stroke="#fca5a5" stroke-width="2" stroke-linecap="round"/>
+        <!-- Frown -->
+        <path d="M9 25 Q16 18 23 25" stroke="#fca5a5" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>
+      <span class="pain-word">Worst</span>
+    </button>
+  </div>
+
+  <!-- ===================== TABS ===================== -->
+  <div class="tabs" role="tablist" aria-label="Communication boards">
+    <button class="tab-btn active" id="tab-main" role="tab" aria-selected="true" aria-controls="board-main">
+      🏠 Daily Needs
+    </button>
+    <button class="tab-btn" id="tab-medical" role="tab" aria-selected="false" aria-controls="board-medical">
+      🏥 Medical
+    </button>
+  </div>
+
+  <!-- ===================== BOARDS ===================== -->
+  <div class="grid-wrap">
+    <div class="board active" id="board-main"    role="tabpanel" aria-labelledby="tab-main"></div>
+    <div class="board"        id="board-medical" role="tabpanel" aria-labelledby="tab-medical"></div>
+  </div>
+
+
+  <!-- ===================== TYPE TO SPEAK BAR ===================== -->
+  <div class="tts-bar" role="search" aria-label="Type to speak">
+    <input class="tts-input" id="ttsInput" type="text"
+           placeholder="Type anything to speak it aloud…"
+           autocomplete="off" autocorrect="off" autocapitalize="sentences"
+           spellcheck="false" aria-label="Type to speak text input">
+    <button class="tts-speak-btn" id="ttsSpeakBtn" aria-label="Speak typed text">
+      🗣️ SPEAK
+    </button>
+    <button class="tts-clear-btn" id="ttsClearBtn" aria-label="Clear typed text" title="Clear">✕</button>
+  </div>
+
+  <!-- ===================== EDIT OVERLAY ===================== -->
+  <div class="edit-overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="editHeading">
+    <h2 id="editHeading">✏️ Rename Button</h2>
+    <p>Type a new label — max 18 characters</p>
+    <input class="edit-input" type="text" id="editInput" maxlength="18" placeholder="Enter label…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <button class="edit-save"   id="editSaveBtn">✓ Save Label</button>
+    <button class="edit-cancel" id="editCancelBtn">✕ Cancel</button>
+    <button class="edit-reset"  id="editResetBtn">↺ Reset to original</button>
+  </div>
+
+  <!-- ===================== WHITEBOARD OVERLAY ===================== -->
+  <div class="wb-overlay" id="wbOverlay" role="dialog" aria-modal="true" aria-label="Whiteboard drawing mode">
+    <div class="wb-toolbar">
+      <span class="wb-label">Color:</span>
+      <button class="wb-color-btn active" id="wbColWhite" style="background:#ffffff" aria-label="White" title="White"></button>
+      <button class="wb-color-btn"        id="wbColGold"  style="background:#FFD700" aria-label="Yellow" title="Yellow"></button>
+      <button class="wb-color-btn"        id="wbColRed"   style="background:#ef4444" aria-label="Red" title="Red"></button>
+
+      <div class="wb-sep"></div>
+      <span class="wb-label">Size:</span>
+      <button class="wb-tool-btn active" id="wbSizeSm"  aria-label="Small brush" title="Small">●</button>
+      <button class="wb-tool-btn"        id="wbSizeLg"  aria-label="Large brush" title="Large" style="font-size:26px">●</button>
+
+      <div class="wb-sep"></div>
+      <button class="wb-tool-btn" id="wbEraser" aria-label="Eraser" title="Eraser">⌫</button>
+      <button class="wb-clear-btn" id="wbClear" aria-label="Clear canvas">🗑 Clear</button>
+      <button class="wb-close-btn" id="wbClose" aria-label="Close whiteboard">✕ Close</button>
+    </div>
+    <canvas id="wbCanvas" aria-label="Drawing canvas"></canvas>
+    <div class="wb-hint">DRAW WITH YOUR FINGER</div>
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="footer" role="contentinfo">
+    <span class="footer-legal">⚠ Not a medical device. For communication assistance only. © 2025 The Dad Side Hustle Co.</span>
+    <span class="footer-mute">No sound? Check your device's Mute/Silent switch.</span>
+  </footer>
+
+
+  <script>
+    /* ====================================================
+       SENIOR AAC COMMUNICATION BOARD — v1.0
+       Single-file · Offline · No subscription · No Wi-Fi
+       ==================================================== */
+
+    // ===================================================
+    // 1. BUTTON DATA
+    // ===================================================
+    // Main board — grouped: Physical → Environment → Communication → Family
+    const MAIN_GROUPS = [
+      {
+        label: '🫧 Physical Needs',
+        buttons: [
+          { id:'m1', label:'Water',    speak:'I would like some water please',    cat:'physical', icon:'water'    },
+          { id:'m2', label:'Hungry',   speak:'I am hungry and would like some food', cat:'physical', icon:'food'  },
+          { id:'m3', label:'Bathroom', speak:'I need to use the bathroom',        cat:'physical', icon:'bathroom' },
+          { id:'m4', label:'Cold',     speak:'I am cold, I need a blanket',       cat:'physical', icon:'cold'     },
+          { id:'m5', label:'Hot',      speak:'I am hot and need to cool down',    cat:'physical', icon:'hot'      },
+        ]
+      },
+      {
+        label: '🏠 Environment',
+        buttons: [
+          { id:'m6', label:'Lights',      speak:'Please turn the lights on or off',  cat:'environment', icon:'lights'  },
+          { id:'m7', label:'TV / Radio',  speak:'Please turn on the TV or radio',    cat:'environment', icon:'tv'      },
+          { id:'m8', label:'Eyeglasses',  speak:'I need my eyeglasses',              cat:'environment', icon:'glasses' },
+        ]
+      },
+      {
+        label: '💬 Communication',
+        buttons: [
+          { id:'m9',  label:'Yes',       speak:'Yes',                   cat:'communication', icon:'yes'      },
+          { id:'m10', label:'No',        speak:'No',                    cat:'communication', icon:'no'       },
+          { id:'m11', label:'Thank You', speak:'Thank you very much',   cat:'communication', icon:'thankyou' },
+        ]
+      },
+      {
+        label: '👨‍👩‍👧 Family & Help',
+        buttons: [
+          { id:'m12', label:'Call Family', speak:'Please call my family', cat:'social', icon:'phone' },
+        ]
+      },
+    ];
+    const MAIN_BUTTONS = MAIN_GROUPS.flatMap(g => g.buttons);
+
+    // Medical board — grouped: Urgent → Symptoms → Care → Communication
+    const MEDICAL_GROUPS = [
+      {
+        label: '🚨 Urgent',
+        buttons: [
+          { id:'md3',  label:'Chest Pain',     speak:'I have chest pain, please get help',      cat:'urgent',  icon:'chestpain'  },
+          { id:'md5',  label:"Can't Breathe",  speak:'I am having trouble breathing',           cat:'urgent',  icon:'breathless' },
+          { id:'md10', label:'Need Help',      speak:'I need help, please come',                cat:'urgent',  icon:'needhelp'   },
+        ]
+      },
+      {
+        label: '🤒 Symptoms',
+        buttons: [
+          { id:'md1',  label:'Dizzy',     speak:'I feel dizzy',                                 cat:'symptom', icon:'dizzy'    },
+          { id:'md2',  label:'Nausea',    speak:'I feel nauseous and sick to my stomach',       cat:'symptom', icon:'nausea'   },
+          { id:'md4',  label:'Headache',  speak:'I have a headache',                            cat:'symptom', icon:'headache' },
+          { id:'md11', label:'Allergy',   speak:'I am having an allergic reaction',             cat:'symptom', icon:'allergy'  },
+        ]
+      },
+      {
+        label: '💊 Care & Treatment',
+        buttons: [
+          { id:'md7',  label:'Medicine',       speak:'I need my medicine',         cat:'care', icon:'medicine'  },
+          { id:'md8',  label:'Doctor',         speak:'I need to see a doctor',     cat:'care', icon:'doctor'    },
+          { id:'md6',  label:'Tired / Sleepy', speak:'I am very tired and sleepy', cat:'care', icon:'tired'     },
+          { id:'md9',  label:"Can't Sleep",    speak:'I cannot sleep',             cat:'care', icon:'cantsleep' },
+        ]
+      },
+      {
+        label: '💬 Communication',
+        buttons: [
+          { id:'md12', label:'Say Again', speak:'__REPEAT__', cat:'communication', icon:'repeat' },
+        ]
+      },
+    ];
+    // Flat list kept for backwards-compatible localStorage keys
+    const MEDICAL_BUTTONS = MEDICAL_GROUPS.flatMap(g => g.buttons);
+
+    // ===================================================
+    // 2. SVG ICON LIBRARY (all inline, no external files)
+    // ===================================================
+    const ICONS = {
+
+      water: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 4 C20 12 9 24 9 31 A15 15 0 0 0 39 31 C39 24 28 12 24 4Z" opacity="0.9"/>
+        <path d="M15 33 C14 29 16 26 18 24" stroke="rgba(255,255,255,0.35)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>`,
+
+      food: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="12" y="6" width="3" height="14" rx="1.5"/>
+        <rect x="18" y="6" width="3" height="14" rx="1.5"/>
+        <rect x="24" y="6" width="3" height="14" rx="1.5"/>
+        <rect x="10" y="18" width="19" height="3.5" rx="1.75"/>
+        <rect x="19" y="21" width="5" height="21" rx="2.5"/>
+        <rect x="31" y="6" width="3" height="8" rx="1.5"/>
+        <path d="M34 6 C37 6 39 9 39 14 L35 16" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <rect x="31" y="16" width="3" height="26" rx="1.5"/>
+      </svg>`,
+
+      bathroom: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <ellipse cx="28" cy="38" rx="13" ry="8" opacity="0.95"/>
+        <rect x="22" y="30" width="12" height="8" rx="1"/>
+        <rect x="22" y="22" width="12" height="8" rx="3"/>
+        <rect x="24" y="16" width="8" height="7" rx="3" opacity="0.7"/>
+        <circle cx="14" cy="10" r="4" opacity="0.8"/>
+        <path d="M10 14 L10 42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+        <path d="M10 26 L18 22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+      </svg>`,
+
+      cold: `<svg viewBox="0 0 48 48" stroke="currentColor" stroke-linecap="round" fill="none" aria-hidden="true">
+        <line x1="24" y1="3"  x2="24" y2="45" stroke-width="3.5"/>
+        <line x1="3"  y1="24" x2="45" y2="24" stroke-width="3.5"/>
+        <line x1="8"  y1="8"  x2="40" y2="40" stroke-width="3.5"/>
+        <line x1="40" y1="8"  x2="8"  y2="40" stroke-width="3.5"/>
+        <circle cx="24" cy="3"  r="3" fill="currentColor" stroke="none"/>
+        <circle cx="24" cy="45" r="3" fill="currentColor" stroke="none"/>
+        <circle cx="3"  cy="24" r="3" fill="currentColor" stroke="none"/>
+        <circle cx="45" cy="24" r="3" fill="currentColor" stroke="none"/>
+        <circle cx="8"  cy="8"  r="3" fill="currentColor" stroke="none"/>
+        <circle cx="40" cy="40" r="3" fill="currentColor" stroke="none"/>
+        <circle cx="40" cy="8"  r="3" fill="currentColor" stroke="none"/>
+        <circle cx="8"  cy="40" r="3" fill="currentColor" stroke="none"/>
+      </svg>`,
+
+      hot: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 4 C22 11 15 15 17 23 C17 23 22 18 21 15 C21 15 31 22 29 33 C31 29 36 22 31 14 C31 14 39 21 37 31 C39 27 42 18 37 10 C37 10 40 17 35 21 C33 12 28 7 24 4Z" opacity="0.85"/>
+        <path d="M20 29 C18 35 20 41 24 44 C28 41 30 35 28 29 C27 33 25 35 24 37 C23 35 21 33 20 29Z" opacity="0.75"/>
+      </svg>`,
+
+      lights: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="19" r="9"/>
+        <path d="M24 2v5M24 41v5M2 19h5M41 19h5" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M7.8 6.8l3.5 3.5M36.7 35.7l3.5 3.5M7.8 31.2l3.5-3.5M36.7 2.3l-3.5 3.5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <rect x="19" y="28" width="10" height="3"   rx="1.5"/>
+        <rect x="20" y="31" width="8"  height="3"   rx="1.5"/>
+        <rect x="21" y="34" width="6"  height="2.5" rx="1.25"/>
+      </svg>`,
+
+      tv: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="3"  y="9"  width="42" height="28" rx="3.5" opacity="0.9"/>
+        <rect x="6"  y="12" width="36" height="22" rx="1.5" fill="#000" opacity="0.45"/>
+        <rect x="16" y="39" width="16" height="3"  rx="1.5"/>
+        <circle cx="39" cy="19" r="2.2"/>
+        <circle cx="39" cy="26" r="2.2"/>
+        <path d="M14 17 L14 31 L27 24 Z" fill="rgba(255,255,255,0.55)"/>
+      </svg>`,
+
+      glasses: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+        <circle cx="13" cy="26" r="9"/>
+        <circle cx="35" cy="26" r="9"/>
+        <path d="M22 26 H26" stroke-linecap="round"/>
+        <path d="M4 21 Q3 18 3 16" stroke-linecap="round"/>
+        <path d="M44 21 Q45 18 45 16" stroke-linecap="round"/>
+      </svg>`,
+
+      yes: `<svg viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" fill="#022b1a" stroke="#059669" stroke-width="2.5"/>
+        <path d="M11 24 L20 33 L37 14" stroke="#6ee7b7" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>`,
+
+      no: `<svg viewBox="0 0 48 48" aria-hidden="true">
+        <circle cx="24" cy="24" r="21" fill="#2d0606" stroke="#dc2626" stroke-width="2.5"/>
+        <path d="M14 14 L34 34 M34 14 L14 34" stroke="#fca5a5" stroke-width="5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      thankyou: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 41 L9 26 C4 21 4 13 9 8 C14 3 21 3 24 8 C27 3 34 3 39 8 C44 13 44 21 39 26 Z" opacity="0.9"/>
+        <path d="M22 19 L24 26 M26 19 L24 26 M24 26 L24 34" stroke="rgba(0,0,0,0.4)" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </svg>`,
+
+      phone: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M12 8 C11 8 9 8 9 10 L9 16 C9 18 11 18 11 18 C25 18 30 23 30 37 C30 37 30 39 32 39 L38 39 C40 39 40 37 40 37 C40 20 28 8 12 8Z" opacity="0.3"/>
+        <path d="M15 6 l7 0 l3.5 9 -5 2.5 c2.5 5 7.5 10 12.5 12.5 l2.5-5 9 3.5 0 7 c0 2-2 2-2 2 C20 37 11 27 15 6Z"/>
+      </svg>`,
+
+      dizzy: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="24" cy="28" r="14" stroke-width="3"/>
+        <circle cx="18" cy="24" r="2.5" fill="currentColor" stroke="none"/>
+        <circle cx="30" cy="24" r="2.5" fill="currentColor" stroke="none"/>
+        <path d="M18 34 Q24 30 30 34" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M16 10 A12 12 0 0 1 36 10" stroke-width="3" stroke-linecap="round"/>
+        <path d="M34 6 L36 10 L32 11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M14 6 L12 10 L16 11" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>`,
+
+      nausea: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="14" stroke-width="3"/>
+        <circle cx="18" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+        <circle cx="30" cy="20" r="2.5" fill="currentColor" stroke="none"/>
+        <path d="M18 30 Q24 26 30 30" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M14 40 Q18 36 22 40 Q26 44 30 40 Q34 36 36 40" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      chestpain: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 42 L8 26 C3 21 3 13 8 8 C13 3 21 3 24 9 C27 3 35 3 40 8 C45 13 45 21 40 26 Z" opacity="0.7"/>
+        <path d="M22 16 L26 16 L22 24 L26 24 L20 34 L22 26 L18 26 Z" fill="#fff" opacity="0.85"/>
+      </svg>`,
+
+      headache: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="24" cy="28" r="14" stroke-width="3"/>
+        <circle cx="18" cy="25" r="2.5" fill="currentColor" stroke="none"/>
+        <circle cx="30" cy="25" r="2.5" fill="currentColor" stroke="none"/>
+        <path d="M18 34 Q24 31 30 34" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M17 11 L15 6 M24 10 L24 5 M31 11 L33 6" stroke-width="3" stroke-linecap="round"/>
+      </svg>`,
+
+      breathless: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M16 8 C13 8 10 10 9 14 L7 20 C6 23 8 26 12 27 L16 28 C16 28 16 36 19 39 C21 41 24 40 24 40 C24 40 27 41 29 39 C32 36 32 28 32 28 L36 27 C40 26 42 23 41 20 L39 14 C38 10 35 8 32 8 L28 9 C26 10 25 11 24 13 C23 11 22 10 20 9 Z" opacity="0.75"/>
+        <path d="M17 22 Q24 29 31 22" stroke="rgba(255,255,255,0.6)" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      tired: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M32 7 C25 9 18 16 18 25 C18 34 25 40 34 40 C25 45 13 38 10 27 C7 16 14 5 25 3 C27 2.5 29 2.6 32 3 Q36 4.5 32 7Z" opacity="0.9"/>
+        <text x="33" y="20" font-size="13" fill="currentColor" font-weight="900" font-family="Arial">z</text>
+        <text x="37" y="12" font-size="9"  fill="currentColor" font-weight="900" font-family="Arial" opacity="0.65">z</text>
+      </svg>`,
+
+      medicine: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="8" y="20" width="32" height="14" rx="7" transform="rotate(-40 24 27)" opacity="0.9"/>
+        <rect x="8" y="20" width="16" height="14" rx="0" transform="rotate(-40 24 27)" opacity="0.5" fill="rgba(0,0,0,0.4)"/>
+        <line x1="18" y1="21" x2="30" y2="33" stroke="rgba(255,255,255,0.35)" stroke-width="2.5"/>
+      </svg>`,
+
+      doctor: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true">
+        <circle cx="24" cy="12" r="8"/>
+        <path d="M14 22 C10 24 8 29 8 34 L8 44 L40 44 L40 34 C40 29 38 24 34 22" stroke-linecap="round"/>
+        <path d="M24 32 L24 42 M19 37 L29 37" stroke-linecap="round"/>
+      </svg>`,
+
+      cantsleep: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="24" cy="26" r="14" stroke-width="3"/>
+        <ellipse cx="18" cy="22" rx="3.5" ry="2.5" fill="currentColor" stroke="none"/>
+        <ellipse cx="30" cy="22" rx="3.5" ry="2.5" fill="currentColor" stroke="none"/>
+        <circle cx="17" cy="21" r="1.3" fill="#000" stroke="none"/>
+        <circle cx="29" cy="21" r="1.3" fill="#000" stroke="none"/>
+        <path d="M17 32 Q24 29 31 32" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M36 8 L44 8 L36 16 L44 16" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>`,
+
+      needhelp: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M24 5 C22 5 20 7 20 9 L20 26 L17 23 C15.5 21.5 13 21 11.5 22.5 C10 24 10 26.5 12 28.5 L20 38 C22 41 26 44 31 44 L35 44 C39 44 42 41 42 37 L42 24 C42 22 40 20 38 20 C36.5 20 35 21 34 22 L34 20 C34 18 32 16 30 16 C28.5 16 27.5 17 27 18 L27 9 C27 7 25.5 5 24 5Z" opacity="0.85"/>
+      </svg>`,
+
+      allergy: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" aria-hidden="true">
+        <circle cx="24" cy="26" r="14" stroke-width="3"/>
+        <circle cx="18" cy="22" r="2.5" fill="currentColor" stroke="none"/>
+        <circle cx="30" cy="22" r="2.5" fill="currentColor" stroke="none"/>
+        <path d="M20 29 Q22 33 24 29 Q26 33 24 38" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M18 32 Q24 29 30 32" stroke-width="2" stroke-linecap="round"/>
+        <path d="M8 6 L40 6 L40 38" stroke-width="0" fill="none"/>
+        <line x1="6" y1="6" x2="42" y2="42" stroke-width="3.5" stroke-linecap="round" opacity="0.7"/>
+      </svg>`,
+
+      repeat: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" aria-hidden="true">
+        <path d="M8 26 C8 15 16 7 27 7 L36 7"/>
+        <path d="M30 3 L36 7 L30 11" stroke-linejoin="round" fill="currentColor"/>
+        <path d="M40 22 C40 33 32 41 21 41 L12 41"/>
+        <path d="M18 45 L12 41 L18 37" stroke-linejoin="round" fill="currentColor"/>
+      </svg>`,
+
+    }; // end ICONS
+
+    // ===================================================
+    // 3. STATE
+    // ===================================================
+    let lastSpoken   = '';
+    let isEditMode   = false;
+    let editingId    = null;
+    let editingEl    = null;
+    const DEBOUNCE   = 500; // ms — anti-tremor
+    const lastClick  = {};  // { buttonId: timestamp }
+
+    // ===================================================
+    // 4. LOCAL STORAGE HELPERS
+    // ===================================================
+    function loadLabels() {
+      try { return JSON.parse(localStorage.getItem('aac_labels') || '{}'); }
+      catch(e) { return {}; }
+    }
+    function saveLabel(id, text) {
+      const d = loadLabels();
+      d[id] = text;
+      localStorage.setItem('aac_labels', JSON.stringify(d));
+    }
+    function removeLabel(id) {
+      const d = loadLabels();
+      delete d[id];
+      localStorage.setItem('aac_labels', JSON.stringify(d));
+    }
+
+    // ===================================================
+    // 5. RENDER BOARDS
+    // ===================================================
+    function buildButton(btn) {
+      const labels = loadLabels();
+      const label  = labels[btn.id] || btn.label;
+      const el     = document.createElement('button');
+      el.className = `comm-btn cat-${btn.cat}`;
+      el.id        = `btn-${btn.id}`;
+      el.setAttribute('aria-label', label);
+      el.setAttribute('data-id',    btn.id);
+      el.setAttribute('data-speak', btn.speak);
+      el.setAttribute('data-default', btn.label);
+      el.innerHTML = `${ICONS[btn.icon] || ''}
+                      <span class="btn-label">${label}</span>`;
+      el.addEventListener('click', onCommBtnClick);
+      return el;
+    }
+
+    function renderGroupedBoard(groups, container) {
+      container.innerHTML = '';
+      groups.forEach((group) => {
+        group.buttons.forEach((b, i) => {
+          const el = buildButton(b);
+          // Mark the first button of each group with a subtle inner-glow
+          // (no layout impact — color blocks provide the visual grouping)
+          if (i === 0) el.classList.add('group-start');
+          container.appendChild(el);
+        });
+      });
+    }
+
+    function renderBoards() {
+      renderGroupedBoard(MAIN_GROUPS,    document.getElementById('board-main'));
+      renderGroupedBoard(MEDICAL_GROUPS, document.getElementById('board-medical'));
+    }
+
+    // ===================================================
+    // 6. TEXT-TO-SPEECH  (with anti-tremor debounce)
+    // ===================================================
+    function speak(text, btnEl) {
+      if (!text || text === '__REPEAT__') return;
+      lastSpoken = text;
+      window.speechSynthesis.cancel();
+      const utt   = new SpeechSynthesisUtterance(text);
+      utt.rate    = 0.88;
+      utt.pitch   = 1.0;
+      utt.volume  = 1.0;
+      window.speechSynthesis.speak(utt);
+      if (btnEl) flashButton(btnEl);
+    }
+
+    function flashButton(el) {
+      el.classList.remove('flashing');
+      void el.offsetWidth; // force reflow
+      el.classList.add('flashing');
+      setTimeout(() => el.classList.remove('flashing'), 550);
+    }
+
+    // ===================================================
+    // 7. PANIC CHIME  (Web Audio API — no external files)
+    // ===================================================
+    function playPanicChime() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+        // Resume context if suspended (iOS requirement)
+        if (ctx.state === 'suspended') ctx.resume();
+
+        const notes = [
+          { f: 880, t: 0.00, d: 0.22 },
+          { f: 660, t: 0.28, d: 0.18 },
+          { f: 880, t: 0.52, d: 0.22 },
+          { f: 660, t: 0.78, d: 0.18 },
+          { f: 1047,t: 1.02, d: 0.45 },
+        ];
+
+        notes.forEach(n => {
+          const osc  = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.type          = 'sine';
+          osc.frequency.value = n.f;
+          gain.gain.setValueAtTime(0, ctx.currentTime + n.t);
+          gain.gain.linearRampToValueAtTime(0.85, ctx.currentTime + n.t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
+          osc.start(ctx.currentTime + n.t);
+          osc.stop(ctx.currentTime + n.t + n.d + 0.05);
+        });
+
+        flashButton(document.getElementById('panicBtn'));
+      } catch(e) {
+        console.warn('Web Audio not available:', e);
+      }
+    }
+
+    // ===================================================
+    // 8. BUTTON CLICK HANDLER
+    // ===================================================
+    function onCommBtnClick(e) {
+      const el = e.currentTarget;
+      const id = el.getAttribute('data-id');
+
+      // EDIT MODE — open rename overlay
+      if (isEditMode) {
+        openEditOverlay(id, el);
+        return;
+      }
+
+      // DEBOUNCE — anti-tremor protection
+      const now = Date.now();
+      if (lastClick[id] && now - lastClick[id] < DEBOUNCE) return;
+      lastClick[id] = now;
+
+      const speakText = el.getAttribute('data-speak');
+
+      // Special: "Say Again" repeats last spoken phrase
+      if (speakText === '__REPEAT__') {
+        if (lastSpoken) speak(lastSpoken, el);
+        else flashButton(el);
+        return;
+      }
+
+      speak(speakText, el);
+    }
+
+    // ===================================================
+    // 9. PAIN SCALE BUTTONS
+    // ===================================================
+    document.querySelectorAll('.pain-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const text = btn.getAttribute('data-speak');
+        speak(text, btn);
+      });
+    });
+
+    // ===================================================
+    // 10. EDIT MODE
+    // ===================================================
+    // ── Edit mode: long-hold (2s) to ENTER, quick tap to EXIT ──────────────
+    let lockHoldTimer = null;
+
+    function enterEditMode() {
+      isEditMode = true;
+      document.body.classList.add('edit-mode');
+      const lockBtn   = document.getElementById('lockBtn');
+      const lockLabel = document.getElementById('lockLabel');
+      const lockPath  = document.getElementById('lockPath');
+      lockBtn.classList.add('unlocked');
+      lockLabel.textContent = 'Lock';
+      lockPath.setAttribute('d', 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6h2.9c0-1.16.94-2.1 2.1-2.1 1.16 0 2.1.94 2.1 2.1V8H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z');
+    }
+
+    function exitEditMode() {
+      isEditMode = false;
+      document.body.classList.remove('edit-mode');
+      const lockBtn   = document.getElementById('lockBtn');
+      const lockLabel = document.getElementById('lockLabel');
+      const lockPath  = document.getElementById('lockPath');
+      lockBtn.classList.remove('unlocked');
+      lockLabel.textContent = 'Edit';
+      lockPath.setAttribute('d', 'M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z');
+    }
+
+    function onLockPointerDown(e) {
+      e.preventDefault();
+      if (isEditMode) {
+        // Already in edit mode — quick tap exits immediately
+        exitEditMode();
+        return;
+      }
+      // Start 2-second hold to enter edit mode
+      const btn = document.getElementById('lockBtn');
+      btn.classList.add('lock-holding');
+      lockHoldTimer = setTimeout(() => {
+        btn.classList.remove('lock-holding');
+        lockHoldTimer = null;
+        enterEditMode();
+      }, 2000);
+    }
+
+    function onLockPointerUp(e) {
+      if (lockHoldTimer && !isEditMode) {
+        clearTimeout(lockHoldTimer);
+        lockHoldTimer = null;
+        document.getElementById('lockBtn').classList.remove('lock-holding');
+      }
+    }
+
+    function openEditOverlay(id, el) {
+      editingId = id;
+      editingEl = el;
+      const currentLabel = el.querySelector('.btn-label').textContent;
+      document.getElementById('editInput').value = currentLabel;
+      document.getElementById('editOverlay').classList.add('open');
+      setTimeout(() => document.getElementById('editInput').select(), 120);
+    }
+
+    function closeEditOverlay() {
+      document.getElementById('editOverlay').classList.remove('open');
+      editingId = null;
+      editingEl = null;
+    }
+
+    function saveEdit() {
+      const raw = document.getElementById('editInput').value.trim();
+      if (!raw || !editingId || !editingEl) { closeEditOverlay(); return; }
+      editingEl.querySelector('.btn-label').textContent = raw;
+      editingEl.setAttribute('aria-label', raw);
+      saveLabel(editingId, raw);
+      closeEditOverlay();
+    }
+
+    function resetEdit() {
+      if (!editingId || !editingEl) return;
+      const def = editingEl.getAttribute('data-default');
+      editingEl.querySelector('.btn-label').textContent = def;
+      editingEl.setAttribute('aria-label', def);
+      removeLabel(editingId);
+      closeEditOverlay();
+    }
+
+    // ===================================================
+    // 11. TAB SWITCHING
+    // ===================================================
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(t => {
+        const active = t.id === `tab-${name}`;
+        t.classList.toggle('active', active);
+        t.setAttribute('aria-selected', active);
+      });
+      document.querySelectorAll('.board').forEach(b => {
+        b.classList.toggle('active', b.id === `board-${name}`);
+      });
+    }
+
+    // ===================================================
+    // 12. EVENT LISTENERS
+    // ===================================================
+    document.getElementById('panicBtn').addEventListener('click', playPanicChime);
+    document.getElementById('repeatBtn').addEventListener('click', () => {
+      if (lastSpoken) speak(lastSpoken, document.getElementById('repeatBtn'));
+    });
+    const lockBtnEl = document.getElementById('lockBtn');
+    lockBtnEl.addEventListener('pointerdown', onLockPointerDown);
+    lockBtnEl.addEventListener('pointerup',   onLockPointerUp);
+    lockBtnEl.addEventListener('pointerleave',onLockPointerUp);
+    lockBtnEl.addEventListener('pointercancel',onLockPointerUp);
+    // Export/Import banner buttons
+    document.getElementById('exportBtn').addEventListener('click', exportData);
+    document.getElementById('importBtn').addEventListener('click', () =>
+      document.getElementById('importFileInput').click()
+    );
+    document.getElementById('importFileInput').addEventListener('change', importData);
+    document.getElementById('tab-main').addEventListener('click', () => switchTab('main'));
+    document.getElementById('tab-medical').addEventListener('click', () => switchTab('medical'));
+    document.getElementById('editSaveBtn').addEventListener('click', saveEdit);
+    document.getElementById('editCancelBtn').addEventListener('click', closeEditOverlay);
+    document.getElementById('editResetBtn').addEventListener('click', resetEdit);
+    document.getElementById('editInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter')  saveEdit();
+      if (e.key === 'Escape') closeEditOverlay();
+    });
+
+    // Close edit overlay on backdrop click
+    document.getElementById('editOverlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('editOverlay')) closeEditOverlay();
+    });
+
+    // ===================================================
+    // 13. PWA — MANIFEST + SERVICE WORKER (INLINE)
+    // ===================================================
+
+    // Inject web app manifest as a blob URL
+    (function injectManifest() {
+      try {
+        const manifest = {
+          name: 'Senior AAC Communication Board',
+          short_name: 'AAC Board',
+          description: 'Communication tool for non-verbal seniors. No Wi-Fi required.',
+          theme_color: '#000000',
+          background_color: '#000000',
+          display: 'standalone',
+          orientation: 'any',
+          start_url: '.',
+          icons: [{
+            src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' fill='%23000'/%3E%3Cpath d='M24 4 C20 12 9 24 9 31 A15 15 0 0 0 39 31 C39 24 28 12 24 4Z' fill='%233b82f6'/%3E%3C/svg%3E",
+            sizes: 'any',
+            type: 'image/svg+xml'
+          }]
+        };
+        const blob    = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const mUrl    = URL.createObjectURL(blob);
+        const link    = document.createElement('link');
+        link.rel      = 'manifest';
+        link.href     = mUrl;
+        document.head.appendChild(link);
+      } catch(e) {}
+    })();
+
+    // Register inline Service Worker for true offline caching
+    if ('serviceWorker' in navigator) {
+      try {
+        const swSrc = `
+const CACHE = 'aac-v1';
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', e => {
+  e.respondWith(
+    caches.open(CACHE).then(c =>
+      c.match(e.request).then(cached => {
+        const fresh = fetch(e.request).then(r => {
+          if (r && r.status === 200) c.put(e.request, r.clone());
+          return r;
+        }).catch(() => cached);
+        return cached || fresh;
+      })
+    )
+  );
+});`;
+        const swBlob = new Blob([swSrc], { type: 'text/javascript' });
+        const swUrl  = URL.createObjectURL(swBlob);
+        navigator.serviceWorker.register(swUrl).catch(() => {});
+      } catch(e) {}
+    }
+
+
+    // ===================================================
+    // EXPORT / IMPORT (in Edit Mode via banner buttons)
+    // ===================================================
+    function exportData() {
+      const labels = loadLabels();
+      const data = {
+        product:  'Senior AAC Communication Board',
+        version:  typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0',
+        exported: new Date().toISOString(),
+        labels:   labels
+      };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'senior-aac-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (data.labels && typeof data.labels === 'object') {
+            localStorage.setItem('aac_labels', JSON.stringify(data.labels));
+            renderBoards();
+            attachBoardListeners();
+            showImportToast('✅ Labels restored successfully');
+          } else {
+            showImportToast('❌ Invalid backup file');
+          }
+        } catch(err) {
+          showImportToast('❌ Could not read file');
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function showImportToast(msg) {
+      // Reuse the edit banner briefly to show feedback
+      const text = document.querySelector('.edit-banner-text');
+      const orig = text.textContent;
+      text.textContent = msg;
+      setTimeout(() => { text.textContent = orig; }, 2500);
+    }
+
+    // ===================================================
+    // 14. TYPE TO SPEAK BAR
+    // ===================================================
+    (function initTTS() {
+      const input    = document.getElementById('ttsInput');
+      const speakBtn = document.getElementById('ttsSpeakBtn');
+      const clearBtn = document.getElementById('ttsClearBtn');
+
+      function speakTyped() {
+        const text = input.value.trim();
+        if (!text) { input.focus(); return; }
+        speak(text, speakBtn);
+        input.select();
+      }
+
+      speakBtn.addEventListener('click', speakTyped);
+      clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); });
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); speakTyped(); }
+      });
+    })();
+
+    // ===================================================
+    // 15. HOLD-TO-SELECT MODE
+    // ===================================================
+    let holdMode    = false;
+    let holdTimer   = null;
+    let holdTarget  = null;
+
+    function toggleHoldMode() {
+      holdMode = !holdMode;
+      const btn   = document.getElementById('holdBtn');
+      const label = document.getElementById('holdLabel');
+      btn.classList.toggle('hold-active', holdMode);
+      label.textContent = holdMode ? 'ON' : 'Hold';
+      // Rebuild board listeners with correct mode
+      attachBoardListeners();
+    }
+
+    function attachBoardListeners() {
+      document.querySelectorAll('.comm-btn').forEach(el => {
+        // Remove all previous listeners by cloning the element
+        const clone = el.cloneNode(true);
+        el.parentNode.replaceChild(clone, el);
+        if (holdMode) {
+          clone.addEventListener('pointerdown', onHoldStart);
+          clone.addEventListener('pointerup',   onHoldEnd);
+          clone.addEventListener('pointercancel', onHoldEnd);
+          clone.addEventListener('pointerleave', onHoldEnd);
+        } else {
+          clone.addEventListener('click', onCommBtnClick);
+        }
+      });
+    }
+
+    function onHoldStart(e) {
+      e.preventDefault();
+      const el = e.currentTarget;
+      if (isEditMode) { openEditOverlay(el.getAttribute('data-id'), el); return; }
+      cancelHold();
+      holdTarget = el;
+      el.classList.add('holding');
+      holdTimer = setTimeout(() => {
+        el.classList.remove('holding');
+        const speakText = el.getAttribute('data-speak');
+        if (speakText === '__REPEAT__') {
+          if (lastSpoken) speak(lastSpoken, el); else flashButton(el);
+        } else {
+          speak(speakText, el);
+        }
+        holdTarget = null;
+      }, 500);
+    }
+
+    function onHoldEnd(e) {
+      cancelHold();
+    }
+
+    function cancelHold() {
+      if (holdTimer)  { clearTimeout(holdTimer); holdTimer = null; }
+      if (holdTarget) { holdTarget.classList.remove('holding'); holdTarget = null; }
+    }
+
+    document.getElementById('holdBtn').addEventListener('click', toggleHoldMode);
+
+    // ===================================================
+    // 16. WHITEBOARD MODE
+    // ===================================================
+    (function initWhiteboard() {
+      const overlay   = document.getElementById('wbOverlay');
+      const canvas    = document.getElementById('wbCanvas');
+      let ctx         = null;
+      let drawing     = false;
+      let lastX       = 0;
+      let lastY       = 0;
+      let wbColor     = '#ffffff';
+      let brushSize   = 6;
+      let eraserMode  = false;
+
+      function openWB() {
+        overlay.classList.add('open');
+        // Set up canvas dimensions after overlay is visible
+        requestAnimationFrame(() => {
+          const dpr    = window.devicePixelRatio || 1;
+          const w      = canvas.offsetWidth;
+          const h      = canvas.offsetHeight;
+          canvas.width  = w * dpr;
+          canvas.height = h * dpr;
+          ctx = canvas.getContext('2d');
+          ctx.scale(dpr, dpr);
+          ctx.lineCap  = 'round';
+          ctx.lineJoin = 'round';
+        });
+      }
+
+      function closeWB() {
+        overlay.classList.remove('open');
+      }
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches ? e.touches[0] : e;
+        return {
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top
+        };
+      }
+
+      function startDraw(e) {
+        e.preventDefault();
+        if (!ctx) return;
+        drawing = true;
+        const pos = getPos(e);
+        lastX = pos.x; lastY = pos.y;
+        ctx.beginPath();
+        ctx.arc(lastX, lastY, (eraserMode ? brushSize * 3 : brushSize) / 2, 0, Math.PI * 2);
+        ctx.fillStyle = eraserMode ? '#000000' : wbColor;
+        ctx.fill();
+      }
+
+      function doDraw(e) {
+        e.preventDefault();
+        if (!drawing || !ctx) return;
+        const pos  = getPos(e);
+        ctx.globalCompositeOperation = eraserMode ? 'destination-out' : 'source-over';
+        ctx.strokeStyle = wbColor;
+        ctx.lineWidth   = eraserMode ? brushSize * 5 : brushSize;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        lastX = pos.x; lastY = pos.y;
+      }
+
+      function endDraw(e) { e.preventDefault(); drawing = false; }
+
+      // Touch events
+      canvas.addEventListener('touchstart',  startDraw, { passive: false });
+      canvas.addEventListener('touchmove',   doDraw,    { passive: false });
+      canvas.addEventListener('touchend',    endDraw,   { passive: false });
+      canvas.addEventListener('touchcancel', endDraw,   { passive: false });
+      // Mouse events (desktop testing)
+      canvas.addEventListener('mousedown',  startDraw);
+      canvas.addEventListener('mousemove',  e => { if (e.buttons === 1) doDraw(e); });
+      canvas.addEventListener('mouseup',    endDraw);
+
+      // Color buttons
+      function setColor(hex, btn) {
+        wbColor     = hex;
+        eraserMode  = false;
+        document.querySelectorAll('.wb-color-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('wbEraser').classList.remove('active');
+        btn.classList.add('active');
+        if (ctx) ctx.globalCompositeOperation = 'source-over';
+      }
+      document.getElementById('wbColWhite').addEventListener('click', e => setColor('#ffffff', e.currentTarget));
+      document.getElementById('wbColGold').addEventListener('click',  e => setColor('#FFD700', e.currentTarget));
+      document.getElementById('wbColRed').addEventListener('click',   e => setColor('#ef4444', e.currentTarget));
+
+      // Size buttons
+      document.getElementById('wbSizeSm').addEventListener('click', () => {
+        brushSize = 6;
+        document.getElementById('wbSizeSm').classList.add('active');
+        document.getElementById('wbSizeLg').classList.remove('active');
+      });
+      document.getElementById('wbSizeLg').addEventListener('click', () => {
+        brushSize = 18;
+        document.getElementById('wbSizeLg').classList.add('active');
+        document.getElementById('wbSizeSm').classList.remove('active');
+      });
+
+      // Eraser
+      document.getElementById('wbEraser').addEventListener('click', () => {
+        eraserMode = !eraserMode;
+        document.getElementById('wbEraser').classList.toggle('active', eraserMode);
+        document.querySelectorAll('.wb-color-btn').forEach(b => b.classList.toggle('active', !eraserMode && b.id === 'wbColWhite'));
+      });
+
+      // Clear
+      document.getElementById('wbClear').addEventListener('click', () => {
+        if (ctx) ctx.clearRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+      });
+
+      // Open / Close
+      document.getElementById('wbBtn').addEventListener('click', openWB);
+      document.getElementById('wbClose').addEventListener('click', closeWB);
+    })();
+
+    // ===================================================
+    // 14. INIT
+    // ===================================================
+    renderBoards();
+    attachBoardListeners(); // wire tap/hold listeners after boards are built
+
+    // Wake speech synthesis engine (some browsers are lazy)
+    window.addEventListener('touchstart', function wakeAudio() {
+      window.speechSynthesis.cancel();
+      window.removeEventListener('touchstart', wakeAudio);
+    }, { once: true });
+
+    // Prevent rubber-band scroll on iOS
+    document.addEventListener('touchmove', e => {
+      if (e.target.closest('.grid-wrap')) return; // allow grid scroll
+      e.preventDefault();
+    }, { passive: false });
+
+
+    // ===================================================
+    // APP VERSION & UPDATE CHECK
+    // ===================================================
+    const APP_VERSION = '1.1.0';
+    const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
+
+    function hasCustomLabels() {
+      const labels = loadLabels();
+      return Object.keys(labels).length > 0;
+    }
+
+    function checkForUpdate() {
+      if (!navigator.onLine) return;
+      const snooze = localStorage.getItem('aac_update_snooze');
+      if (snooze && Date.now() - parseInt(snooze, 10) < 3 * 24 * 60 * 60 * 1000) return;
+      fetch(UPDATE_CHECK_URL + '?_uc=' + Date.now(), { cache: 'no-store' })
+        .then(r => r.text())
+        .then(html => {
+          const m = html.match(/const APP_VERSION = '([^']+)'/);
+          if (!m) return;
+          if (m[1] !== APP_VERSION) showUpdateModal(m[1]);
+        })
+        .catch(() => {});
+    }
+
+    function showUpdateModal(newVersion) {
+      const custom = hasCustomLabels();
+      document.getElementById('updateVersionText').textContent = 'v' + newVersion;
+      document.getElementById('updateWarningBox').style.display  = custom ? 'block' : 'none';
+      document.getElementById('updateBtnExport').style.display   = custom ? '' : 'none';
+      document.getElementById('updateOverlay').classList.add('active');
+    }
+
+    function dismissUpdate() {
+      localStorage.setItem('aac_update_snooze', String(Date.now()));
+      document.getElementById('updateOverlay').classList.remove('active');
+    }
+
+    function doUpdate() {
+      document.getElementById('updateOverlay').classList.remove('active');
+      caches.keys()
+        .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+        .then(() => {
+          if ('serviceWorker' in navigator) {
+            return navigator.serviceWorker.getRegistrations()
+              .then(regs => Promise.all(regs.map(r => r.unregister())));
+          }
+        })
+        .then(() => window.location.reload(true))
+        .catch(() => window.location.reload(true));
+    }
+
+    function exportAndUpdate() {
+      exportData();
+      setTimeout(doUpdate, 900);
+    }
+
+    // Fire update check 6 seconds after load
+    setTimeout(checkForUpdate, 6000);
+
+  </script>
+
+  <!-- ===================== UPDATE AVAILABLE MODAL ===================== -->
+  <div class="update-overlay" id="updateOverlay" role="dialog" aria-modal="true" aria-label="Update available">
+    <div class="update-modal">
+      <div style="font-size:44px;text-align:center;line-height:1">🆕</div>
+      <div class="update-modal-title">Update Available</div>
+      <p>Senior AAC Board <strong id="updateVersionText" style="color:var(--gold)"></strong> is ready.</p>
+      <div class="update-warning-box" id="updateWarningBox" style="display:none">
+        <p style="font-size:12px;font-weight:800;color:#fbbf24;margin:0 0 4px">⚠️ You have custom labels!</p>
+        <p style="font-size:12px;color:#fcd34d;margin:0;line-height:1.5">
+          <strong>Export your settings first</strong> so you can restore your custom button labels after updating.
+        </p>
+      </div>
+      <div class="update-btn-row">
+        <button class="update-btn update-btn-export" id="updateBtnExport" onclick="exportAndUpdate()">💾 Export Labels &amp; Update</button>
+        <button class="update-btn update-btn-primary" onclick="doUpdate()">⬆️ Update Now</button>
+        <button class="update-btn update-btn-later"   onclick="dismissUpdate()">Later (remind me in 3 days)</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
