@@ -1749,6 +1749,10 @@
       }
     }
 
+    // visualViewport listener for iOS keyboard gap fix
+    // Stored so we can remove it when the overlay closes.
+    let _vpResizeHandler = null;
+
     function openEditOverlay(id, el) {
       editingId = id;
       editingEl = el;
@@ -1757,19 +1761,45 @@
       // Pre-fill emoji if one is set
       const emojiEl = el.querySelector('.btn-emoji');
       document.getElementById('editEmojiInput').value = emojiEl ? emojiEl.textContent : '';
-      document.getElementById('editOverlay').classList.add('open');
+      const overlay = document.getElementById('editOverlay');
+      overlay.classList.add('open');
+      // iOS keyboard gap fix: when the virtual keyboard appears/disappears,
+      // pin the overlay height to the visual viewport so no black gap appears.
+      if (window.visualViewport) {
+        _vpResizeHandler = function() {
+          overlay.style.height = window.visualViewport.height + 'px';
+          overlay.style.top    = window.visualViewport.offsetTop  + 'px';
+          overlay.style.bottom = 'auto';
+        };
+        window.visualViewport.addEventListener('resize', _vpResizeHandler);
+        window.visualViewport.addEventListener('scroll', _vpResizeHandler);
+        _vpResizeHandler(); // apply immediately
+      }
       setTimeout(() => document.getElementById('editInput').select(), 120);
     }
 
     function closeEditOverlay() {
-      document.getElementById('editOverlay').classList.remove('open');
+      const overlay = document.getElementById('editOverlay');
+      overlay.classList.remove('open');
+      // Restore natural sizing and remove viewport listeners
+      overlay.style.height = '';
+      overlay.style.top    = '';
+      overlay.style.bottom = '';
+      if (window.visualViewport && _vpResizeHandler) {
+        window.visualViewport.removeEventListener('resize', _vpResizeHandler);
+        window.visualViewport.removeEventListener('scroll', _vpResizeHandler);
+        _vpResizeHandler = null;
+      }
       editingId = null;
       editingEl = null;
     }
 
     function saveEdit() {
-      const raw = document.getElementById('editInput').value.trim();
-      if (!raw || !editingId || !editingEl) { closeEditOverlay(); return; }
+      if (!editingId || !editingEl) { closeEditOverlay(); return; }
+      // Allow save even if label is blank (user may only be changing emoji).
+      // Fall back to keeping the current displayed label.
+      const inputVal = document.getElementById('editInput').value.trim();
+      const raw = inputVal || editingEl.querySelector('.btn-label').textContent.trim();
 
       // ── Label ──────────────────────────────────────────
       editingEl.querySelector('.btn-label').textContent = raw;
@@ -1777,19 +1807,10 @@
       saveLabel(editingId, raw);
 
       // ── Emoji icon ─────────────────────────────────────
-      const emojiRaw  = document.getElementById('editEmojiInput').value.trim();
-      // Use Intl.Segmenter to extract the first full grapheme cluster (handles
-      // skin-tone modifiers, ZWJ sequences, flags, etc.) — falls back to full
-      // trimmed value on older iOS which still works for common emoji.
-      let emoji = '';
-      if (emojiRaw) {
-        try {
-          const segs = [...new Intl.Segmenter().segment(emojiRaw)];
-          emoji = segs.length ? segs[0].segment : emojiRaw;
-        } catch(_) {
-          emoji = emojiRaw; // Intl.Segmenter not available — use full value
-        }
-      }
+      // Emoji: use the full trimmed value — preserves skin tones, ZWJ sequences,
+      // flags, etc. No grapheme splitting needed since input maxlength="8" already
+      // limits it to roughly one emoji.
+      const emoji = document.getElementById('editEmojiInput').value.trim();
       const iconWrap  = editingEl.querySelector('.btn-icon-wrap');
       if (iconWrap) {
         if (emoji) {
@@ -1873,7 +1894,21 @@
     // ===================================================
     // 12. EVENT LISTENERS
     // ===================================================
-    document.getElementById('panicBtn').addEventListener('click', playPanicChime);
+    // PANIC: use touchstart (fires synchronously in gesture context on iOS —
+    // click is synthesized AFTER the gesture and loses the AudioContext unlock).
+    // Flag prevents the ghost-click from double-firing on touch devices.
+    (function() {
+      const btn = document.getElementById('panicBtn');
+      let touchFired = false;
+      btn.addEventListener('touchstart', function() {
+        touchFired = true;
+        playPanicChime();
+      }, { passive: true });
+      btn.addEventListener('click', function() {
+        if (touchFired) { touchFired = false; return; } // swallow ghost click
+        playPanicChime(); // desktop / mouse fallback
+      });
+    })();
     document.getElementById('repeatBtn').addEventListener('click', () => {
       if (lastSpoken) speak(lastSpoken, document.getElementById('repeatBtn'));
     });
@@ -1895,6 +1930,11 @@
     document.getElementById('editCancelBtn').addEventListener('click', closeEditOverlay);
     document.getElementById('editResetBtn').addEventListener('click', resetEdit);
     document.getElementById('editInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter')  saveEdit();
+      if (e.key === 'Escape') closeEditOverlay();
+    });
+    // Also save when pressing Enter/Done on the emoji input keyboard
+    document.getElementById('editEmojiInput').addEventListener('keydown', e => {
       if (e.key === 'Enter')  saveEdit();
       if (e.key === 'Escape') closeEditOverlay();
     });
@@ -1939,7 +1979,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v6';
+const CACHE = 'aac-v7';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2255,7 +2295,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.3';
+    const APP_VERSION = '1.2.4';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
