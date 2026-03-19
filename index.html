@@ -16,12 +16,21 @@
        One-time purchase · No subscription · No Wi-Fi
        =========================================== */
 
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-    }
+  *, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+/* === FIX #1: Prevent SVG from stealing taps on iPad === */
+button svg {
+  pointer-events: none;
+}
+/* === FIX #2: Make taps count as real user gestures === */
+button {
+  touch-action: manipulation;
+}
+
 
     :root {
       --bg:            #000000;
@@ -72,6 +81,12 @@
       border-bottom: 2px solid #330000;
       flex-shrink: 0;
       height: var(--header-h);
+	  /* === FIX #5: Fix Safari flexbox tap bug when body has overflow:hidden === */
+     .header {
+      position: relative;
+      z-index: 10;
+}
+
     }
 
     .btn-panic {
@@ -92,11 +107,23 @@
       gap: 10px;
       height: 52px;
       transition: background 0.1s, transform 0.1s;
-      user-select: none;
-      -webkit-user-select: none;
+      /* === FIX #4: Keep text unselectable without breaking tap recognition === */
+     .btn-panic span,
+     .btn-icon-sm span {
+     user-select: none;
+    -webkit-user-select: none;
+}
+
       -webkit-touch-callout: none;
     }
     .btn-panic:active  { background: #dc2626; transform: scale(0.97); }
+	/* === FIX #3: Disable transform on touch devices (iPad audio bug) === */
+    @media (pointer: coarse) {
+   .btn-panic:active {
+    transform: none;
+  }
+}
+
     .btn-panic svg     { width: 26px; height: 26px; flex-shrink: 0; }
 
     .btn-icon-sm {
@@ -1023,6 +1050,14 @@
        SENIOR AAC COMMUNICATION BOARD — v1.0
        Single-file · Offline · No subscription · No Wi-Fi
        ==================================================== */
+  /* === OPTIONAL FIX: Universal Web Audio Unlock for iPad/Android ===
+       This ensures the first touch anywhere on the screen unlocks audio.
+       It prevents the "button animates but no sound" issue on older devices.
+    */
+    window.addEventListener('touchstart', () => {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.resume) ctx.resume();
+    }, { once: true });
 
     // ===================================================
     // 1. BUTTON DATA
