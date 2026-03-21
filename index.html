@@ -288,30 +288,22 @@
       height: 100%;
       gap: 6px;
     }
-    /* Core & Daily Needs — 9 buttons, 3×3 */
+    /* All boards — 16 buttons, 4×4 */
     #board-core.active,
-    #board-daily.active {
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(3, 1fr);
-    }
-    /* Feelings & Medical — 12 buttons, 3×4 */
+    #board-daily.active,
     #board-feelings.active,
-    #board-medical.active {
-      grid-template-columns: repeat(3, 1fr);
-      grid-template-rows: repeat(4, 1fr);
-    }
-    /* Custom Buttons — 8 buttons, 2×4 (wide, easy targets) */
+    #board-medical.active,
     #board-custom.active {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       grid-template-rows: repeat(4, 1fr);
     }
 
     @media (orientation: landscape) {
       #board-core.active,
-      #board-daily.active   { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
+      #board-daily.active,
       #board-feelings.active,
-      #board-medical.active { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(3, 1fr); }
-      #board-custom.active  { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(2, 1fr); }
+      #board-medical.active,
+      #board-custom.active  { grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(2, 1fr); }
     }
 
     /* Small phone fallback — allow scroll if screen is too short */
@@ -1084,123 +1076,153 @@
     // 1. BUTTON DATA
     // ===================================================
 
-    // TAB 1 — Core: 9 universal communication buttons (3×3)
+    // TAB 1 — Core: 16 universal communication buttons (4×4)
     const CORE_GROUPS = [
       {
         label: '💬 Core Communication',
         buttons: [
-          { id:'m9',  label:'Yes',       speak:'Yes',                              cat:'communication', icon:'yes'      },
-          { id:'m10', label:'No',        speak:'No',                               cat:'communication', icon:'no'       },
-          { id:'m11', label:'Thank You', speak:'Thank you very much',              cat:'communication', icon:'thankyou' },
-          { id:'c4',  label:'Please',    speak:'Please',                           cat:'communication', icon:'please'   },
-          { id:'c5',  label:'More',      speak:'I would like more please',         cat:'communication', icon:'more'     },
-          { id:'c6',  label:'Stop',      speak:'Please stop',                      cat:'communication', icon:'stop'     },
-          { id:'md10',label:'Help',      speak:'I need help, please come',         cat:'communication', icon:'needhelp' },
-          { id:'md12',label:'Say Again', speak:'__REPEAT__',                       cat:'communication', icon:'repeat'   },
-          { id:'c9',  label:'Wait',      speak:'Please wait just a moment',        cat:'communication', icon:'wait'     },
+          { id:'m9',  label:'Yes',           speak:'Yes',                                    cat:'communication', icon:'yes'      },
+          { id:'m10', label:'No',            speak:'No',                                     cat:'communication', icon:'no'       },
+          { id:'m11', label:'Thank You',     speak:'Thank you very much',                    cat:'communication', icon:'thankyou' },
+          { id:'c4',  label:'Please',        speak:'Please',                                 cat:'communication', icon:'please'   },
+          { id:'c5',  label:'More',          speak:'I would like more please',               cat:'communication', icon:'more'     },
+          { id:'c6',  label:'Stop',          speak:'Please stop',                            cat:'communication', icon:'stop'     },
+          { id:'md10',label:'Help',          speak:'I need help, please come',               cat:'communication', icon:'needhelp' },
+          { id:'md12',label:'Say Again',     speak:'__REPEAT__',                             cat:'communication', icon:'repeat'   },
+          { id:'c9',  label:'Wait',          speak:'Please wait just a moment',              cat:'communication', icon:'wait'     },
+          { id:'c10', label:'Come Here',     speak:'Please come here',                       cat:'communication', icon:'comehere' },
+          { id:'c11', label:'Call Nurse',    speak:'Please call the nurse',                  cat:'communication', icon:'nurse'    },
+          { id:'c12', label:'Not Right',     speak:'Something does not feel right',          cat:'communication', icon:'notright' },
+          { id:'c13', label:'I Don\'t Know', speak:'I do not know',                          cat:'communication', icon:'dontknow' },
+          { id:'c14', label:'Quiet Please',  speak:'Please be quiet, I need some quiet',     cat:'communication', icon:'quiet'    },
+          { id:'c15', label:'Good Morning',  speak:'Good morning',                           cat:'communication', icon:'morning'  },
+          { id:'c16', label:'Good Night',    speak:'Good night',                             cat:'communication', icon:'night'    },
         ]
       },
     ];
     const CORE_BUTTONS = CORE_GROUPS.flatMap(g => g.buttons);
 
-    // TAB 2 — Daily Needs: 9 physical + environment + family buttons (3×3)
+    // TAB 2 — Daily Needs: 16 physical + environment + family buttons (4×4)
     const DAILY_GROUPS = [
       {
         label: '🫧 Physical Needs',
         buttons: [
-          { id:'m1', label:'Water',    speak:'I would like some water please',       cat:'physical',     icon:'water'    },
-          { id:'m2', label:'Hungry',   speak:'I am hungry and would like some food', cat:'physical',     icon:'food'     },
-          { id:'m3', label:'Bathroom', speak:'I need to use the bathroom',           cat:'physical',     icon:'bathroom' },
-          { id:'m4', label:'Cold',     speak:'I am cold, I need a blanket',          cat:'physical',     icon:'cold'     },
-          { id:'m5', label:'Hot',      speak:'I am hot and need to cool down',       cat:'physical',     icon:'hot'      },
+          { id:'m1',  label:'Water',       speak:'I would like some water please',         cat:'physical',     icon:'water'    },
+          { id:'m2',  label:'Hungry',      speak:'I am hungry and would like some food',   cat:'physical',     icon:'food'     },
+          { id:'m3',  label:'Bathroom',    speak:'I need to use the bathroom',             cat:'physical',     icon:'bathroom' },
+          { id:'m4',  label:'Cold',        speak:'I am cold, I need a blanket',            cat:'physical',     icon:'cold'     },
+          { id:'m5',  label:'Hot',         speak:'I am hot and need to cool down',         cat:'physical',     icon:'hot'      },
+          { id:'d10', label:'Tired',       speak:'I am tired and need to rest',            cat:'physical',     icon:'tired'    },
+          { id:'d11', label:'Blanket',     speak:'I need a blanket please',                cat:'physical',     icon:'blanket'  },
+          { id:'d12', label:'Pillow',      speak:'I need another pillow please',           cat:'physical',     icon:'pillow'   },
+          { id:'d13', label:'Sit Up',      speak:'Please help me sit up',                  cat:'physical',     icon:'situp'    },
         ]
       },
       {
         label: '🏠 Environment',
         buttons: [
-          { id:'m6', label:'Lights',     speak:'Please turn the lights on or off', cat:'environment', icon:'lights'  },
-          { id:'m7', label:'TV / Radio', speak:'Please turn on the TV or radio',   cat:'environment', icon:'tv'      },
-          { id:'m8', label:'Eyeglasses', speak:'I need my eyeglasses',             cat:'environment', icon:'glasses' },
+          { id:'m6',  label:'Lights',      speak:'Please turn the lights on or off',      cat:'environment', icon:'lights'   },
+          { id:'m7',  label:'TV / Radio',  speak:'Please turn on the TV or radio',        cat:'environment', icon:'tv'       },
+          { id:'m8',  label:'Eyeglasses',  speak:'I need my eyeglasses',                  cat:'environment', icon:'glasses'  },
+          { id:'d14', label:'Hearing Aid', speak:'I need my hearing aid',                  cat:'environment', icon:'hearaid'  },
+          { id:'d15', label:'Open Window', speak:'Please open the window for fresh air',   cat:'environment', icon:'window'   },
+          { id:'d16', label:'Phone',       speak:'I would like to use the phone',          cat:'environment', icon:'phone'    },
         ]
       },
       {
         label: '👨‍👩‍👧 Family',
         buttons: [
-          { id:'m12', label:'Call Family', speak:'Please call my family', cat:'social', icon:'phone' },
+          { id:'m12', label:'Call Family', speak:'Please call my family',                 cat:'social',      icon:'callfam'  },
         ]
       },
     ];
     const DAILY_BUTTONS = DAILY_GROUPS.flatMap(g => g.buttons);
 
-    // TAB 3 — Feelings & Activities: 12 buttons (3×4)
+    // TAB 3 — Feelings & Activities: 16 buttons (4×4)
     const FEELINGS_GROUPS = [
       {
         label: '😊 Feelings',
         buttons: [
-          { id:'f1', label:'Happy',      speak:'I am feeling happy today',                    cat:'feelings', icon:'happy'      },
-          { id:'f2', label:'Sad',        speak:'I am feeling sad',                            cat:'feelings', icon:'sad'        },
-          { id:'f3', label:'Scared',     speak:'I am scared and frightened',                  cat:'feelings', icon:'scared'     },
-          { id:'f4', label:'Confused',   speak:'I am confused and do not understand',         cat:'feelings', icon:'confused'   },
-          { id:'f5', label:'Frustrated', speak:'I am frustrated right now',                   cat:'feelings', icon:'frustrated' },
-          { id:'f6', label:'Lonely',     speak:'I am feeling lonely',                         cat:'feelings', icon:'lonely'     },
+          { id:'f1',  label:'Happy',      speak:'I am feeling happy today',                    cat:'feelings', icon:'happy'      },
+          { id:'f2',  label:'Sad',        speak:'I am feeling sad',                            cat:'feelings', icon:'sad'        },
+          { id:'f3',  label:'Scared',     speak:'I am scared and frightened',                  cat:'feelings', icon:'scared'     },
+          { id:'f4',  label:'Confused',   speak:'I am confused and do not understand',         cat:'feelings', icon:'confused'   },
+          { id:'f5',  label:'Frustrated', speak:'I am frustrated right now',                   cat:'feelings', icon:'frustrated' },
+          { id:'f6',  label:'Lonely',     speak:'I am feeling lonely',                         cat:'feelings', icon:'lonely'     },
+          { id:'f13', label:'Anxious',    speak:'I am feeling anxious and worried',             cat:'feelings', icon:'anxious'    },
+          { id:'f14', label:'Bored',      speak:'I am bored and would like something to do',   cat:'feelings', icon:'bored'      },
+          { id:'f15', label:'Grateful',   speak:'I am feeling grateful today',                 cat:'feelings', icon:'grateful'   },
+          { id:'f16', label:'In Pain',    speak:'I am in pain and need help',                  cat:'feelings', icon:'inpain'     },
         ]
       },
       {
         label: '🌿 Activities',
         buttons: [
-          { id:'f7',  label:'Go Outside',    speak:'I would like to go outside',                    cat:'activity', icon:'outside'  },
-          { id:'f8',  label:'Read',           speak:'I would like to read something',                cat:'activity', icon:'read'     },
-          { id:'f9',  label:'Rest',           speak:'I need to rest and relax',                      cat:'activity', icon:'rest'     },
-          { id:'f10', label:'Puzzle / Game',  speak:'I would like to do a puzzle or play a game',    cat:'activity', icon:'puzzle'   },
-          { id:'f11', label:'Prayer & Quiet', speak:'I would like some quiet time',                  cat:'activity', icon:'prayer'   },
-          { id:'f12', label:'Look at Photos', speak:'I would like to look at some photos please',    cat:'activity', icon:'photos'   },
+          { id:'f7',  label:'Go Outside',    speak:'I would like to go outside',                 cat:'activity', icon:'outside'  },
+          { id:'f8',  label:'Read',           speak:'I would like to read something',             cat:'activity', icon:'read'     },
+          { id:'f9',  label:'Rest',           speak:'I need to rest and relax',                   cat:'activity', icon:'rest'     },
+          { id:'f10', label:'Puzzle / Game',  speak:'I would like to do a puzzle or play a game', cat:'activity', icon:'puzzle'   },
+          { id:'f11', label:'Prayer & Quiet', speak:'I would like some quiet time',               cat:'activity', icon:'prayer'   },
+          { id:'f12', label:'Look at Photos', speak:'I would like to look at some photos please', cat:'activity', icon:'photos'   },
         ]
       },
     ];
     const FEELINGS_BUTTONS = FEELINGS_GROUPS.flatMap(g => g.buttons);
 
-    // TAB 4 — Medical: 12 buttons (3×4) — Fever + Blurry Vision added
+    // TAB 4 — Medical: 16 buttons (4×4)
     const MEDICAL_GROUPS = [
       {
         label: '🚨 Urgent',
         buttons: [
-          { id:'md3', label:'Chest Pain',    speak:'I have chest pain, please get help', cat:'urgent',  icon:'chestpain'  },
-          { id:'md5', label:"Can't Breathe", speak:'I am having trouble breathing',      cat:'urgent',  icon:'breathless' },
+          { id:'md3',  label:'Chest Pain',    speak:'I have chest pain, please get help',          cat:'urgent',  icon:'chestpain'  },
+          { id:'md5',  label:"Can't Breathe", speak:'I am having trouble breathing',               cat:'urgent',  icon:'breathless' },
+          { id:'md15', label:'Fell Down',     speak:'I have fallen down and need help',            cat:'urgent',  icon:'fallen'     },
+          { id:'md16', label:'Feels Wrong',   speak:'Something feels wrong, please check on me',  cat:'urgent',  icon:'feelswrong' },
         ]
       },
       {
         label: '🤒 Symptoms',
         buttons: [
-          { id:'md1',  label:'Dizzy',          speak:'I feel dizzy',                              cat:'symptom', icon:'dizzy'   },
-          { id:'md2',  label:'Nausea',          speak:'I feel nauseous and sick to my stomach',   cat:'symptom', icon:'nausea'  },
-          { id:'md4',  label:'Headache',        speak:'I have a headache',                        cat:'symptom', icon:'headache'},
-          { id:'md11', label:'Allergy',         speak:'I am having an allergic reaction',         cat:'symptom', icon:'allergy' },
-          { id:'md13', label:'Fever / Chills',  speak:'I think I have a fever, I feel hot and chilled', cat:'symptom', icon:'fever' },
-          { id:'md14', label:'Blurry Vision',   speak:'My vision is blurry, things look out of focus',  cat:'symptom', icon:'blurry'},
+          { id:'md1',  label:'Dizzy',         speak:'I feel dizzy',                                      cat:'symptom', icon:'dizzy'    },
+          { id:'md2',  label:'Nausea',         speak:'I feel nauseous and sick to my stomach',           cat:'symptom', icon:'nausea'   },
+          { id:'md4',  label:'Headache',       speak:'I have a headache',                               cat:'symptom', icon:'headache' },
+          { id:'md11', label:'Allergy',        speak:'I am having an allergic reaction',                cat:'symptom', icon:'allergy'  },
+          { id:'md13', label:'Fever / Chills', speak:'I think I have a fever, I feel hot and chilled',  cat:'symptom', icon:'fever'    },
+          { id:'md14', label:'Blurry Vision',  speak:'My vision is blurry, things look out of focus',   cat:'symptom', icon:'blurry'   },
+          { id:'md17', label:'Back Hurts',     speak:'My back is hurting',                              cat:'symptom', icon:'backpain' },
+          { id:'md18', label:'Stomach Hurts',  speak:'My stomach is hurting',                           cat:'symptom', icon:'stomachpain' },
         ]
       },
       {
         label: '💊 Care & Treatment',
         buttons: [
-          { id:'md7', label:'Medicine',       speak:'I need my medicine',         cat:'care', icon:'medicine'  },
-          { id:'md8', label:'Doctor',         speak:'I need to see a doctor',     cat:'care', icon:'doctor'    },
-          { id:'md6', label:'Tired / Sleepy', speak:'I am very tired and sleepy', cat:'care', icon:'tired'     },
-          { id:'md9', label:"Can't Sleep",    speak:'I cannot sleep',             cat:'care', icon:'cantsleep' },
+          { id:'md7',  label:'Medicine',      speak:'I need my medicine',                              cat:'care', icon:'medicine'   },
+          { id:'md8',  label:'Doctor',        speak:'I need to see a doctor',                          cat:'care', icon:'doctor'     },
+          { id:'md9',  label:"Can't Sleep",   speak:'I cannot sleep',                                  cat:'care', icon:'cantsleep'  },
+          { id:'md19', label:'Show Me',       speak:'Please show me, I will point to where it hurts',  cat:'care', icon:'showme'     },
         ]
       },
     ];
     const MEDICAL_BUTTONS = MEDICAL_GROUPS.flatMap(g => g.buttons);
 
-    // TAB 5 — Custom Buttons: 8 placeholder buttons (2×4)
+    // TAB 5 — Custom Buttons: 16 placeholder buttons (4×4)
     const CUSTOM_BUTTONS = [
-      { id:'cu1', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu2', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu3', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu4', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu5', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu6', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu7', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
-      { id:'cu8', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu1',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu2',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu3',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu4',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu5',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu6',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu7',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu8',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu9',  label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu10', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu11', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu12', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu13', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu14', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu15', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
+      { id:'cu16', label:'＋ Customize', speak:'__PLACEHOLDER__', cat:'placeholder', icon:'placeholder' },
     ];
 
     // ===================================================
@@ -1524,6 +1546,167 @@
       placeholder: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <circle cx="24" cy="24" r="18" stroke-dasharray="5 4" opacity="0.45"/>
         <path d="M24 14 L24 34 M14 24 L34 24" stroke-linecap="round" opacity="0.45"/>
+      </svg>`,
+
+      // ── New Core icons ─────────────────────────────────────────────────────
+      comehere: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="10" r="5"/>
+        <path d="M24 17 C18 17 14 21 14 27 L14 34 L20 34 L20 44 L28 44 L28 34 L34 34 L34 27 C34 21 30 17 24 17Z" opacity="0.9"/>
+        <path d="M38 20 Q44 24 38 28" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M38 16 Q48 24 38 32" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.55"/>
+      </svg>`,
+
+      nurse: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="9" r="5"/>
+        <rect x="21" y="16" width="6" height="16" rx="3" opacity="0.9"/>
+        <rect x="14" y="19" width="20" height="5" rx="2.5" opacity="0.9"/>
+        <rect x="20" y="3" width="8" height="4" rx="2"/>
+        <path d="M20 36 L16 46 M28 36 L32 46" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      notright: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="19" opacity="0.15"/>
+        <path d="M24 5 A19 19 0 1 1 23.99 5Z" fill="none" stroke="currentColor" stroke-width="3"/>
+        <text x="24" y="30" font-size="22" text-anchor="middle" font-weight="bold">?!</text>
+      </svg>`,
+
+      dontknow: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M18 16 C18 11 30 11 30 18 C30 22 24 23 24 27" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <circle cx="24" cy="34" r="3"/>
+      </svg>`,
+
+      quiet: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M8 18 L8 30 L16 30 L26 40 L26 8 L16 18Z" opacity="0.9"/>
+        <path d="M32 16 L40 32 M40 16 L32 32" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+      </svg>`,
+
+      morning: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="22" r="9" opacity="0.95"/>
+        <path d="M24 4 L24 9 M24 35 L24 40 M6 22 L11 22 M37 22 L42 22 M10 8 L14 12 M34 12 L38 8 M10 36 L14 32 M34 32 L38 36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M6 38 L42 38" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"/>
+      </svg>`,
+
+      night: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M28 8 C18 10 12 19 14 29 C16 39 26 44 36 41 C28 40 22 34 22 25 C22 17 24 11 28 8Z" opacity="0.95"/>
+        <circle cx="36" cy="12" r="2" opacity="0.7"/>
+        <circle cx="40" cy="20" r="1.5" opacity="0.5"/>
+        <circle cx="32" cy="6"  r="1.5" opacity="0.6"/>
+      </svg>`,
+
+      // ── New Daily icons ────────────────────────────────────────────────────
+      blanket: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="6" y="16" width="36" height="22" rx="4" opacity="0.9"/>
+        <path d="M6 20 L42 20 M6 28 L42 28" stroke="rgba(0,0,0,0.2)" stroke-width="2" fill="none"/>
+        <path d="M14 10 C14 7 18 5 20 8 C22 5 26 5 26 8 C28 5 32 6 32 10 L14 10Z" opacity="0.6"/>
+      </svg>`,
+
+      pillow: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <rect x="8" y="14" width="32" height="20" rx="10" opacity="0.9"/>
+        <ellipse cx="24" cy="24" rx="8" ry="5" opacity="0.2"/>
+      </svg>`,
+
+      situp: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="9" r="5"/>
+        <path d="M14 22 C14 18 18 16 24 16 C30 16 34 18 34 22 L34 30 L24 30 L14 30Z" opacity="0.9"/>
+        <path d="M24 30 L20 44 M24 30 L28 44" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <path d="M34 22 L42 22" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.6"/>
+        <path d="M38 18 L42 22 L38 26" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+      </svg>`,
+
+      hearaid: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M16 14 C16 8 32 8 32 18 C32 26 26 28 24 34" stroke="currentColor" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <circle cx="22" cy="37" r="3.5"/>
+        <circle cx="30" cy="32" r="2.5" opacity="0.7"/>
+        <path d="M34 20 C38 20 40 23 38 27" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.55"/>
+      </svg>`,
+
+      window: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <rect x="8" y="8" width="32" height="32" rx="3" stroke-width="3"/>
+        <path d="M24 8 L24 40 M8 24 L40 24"/>
+        <path d="M30 14 L36 14 L36 20" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+        <path d="M30 14 L36 20" stroke-linecap="round" opacity="0.6"/>
+      </svg>`,
+
+      callfam: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M14 8 C10 8 8 11 8 14 C8 30 18 40 34 40 C37 40 40 38 40 34 L36 28 C35 26 33 26 31 27 L29 28 C27 29 25 28 23 26 L22 25 C20 23 19 21 20 19 L21 17 C22 15 22 13 20 12 Z" opacity="0.9"/>
+        <circle cx="32" cy="12" r="4"/>
+        <circle cx="40" cy="12" r="4"/>
+        <path d="M28 18 C28 15 44 15 44 18" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>`,
+
+      // ── New Feelings icons ─────────────────────────────────────────────────
+      anxious: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="19" cy="17" r="2.5"/>
+        <circle cx="29" cy="17" r="2.5"/>
+        <path d="M16 26 C18 24 22 23 24 25 C26 23 30 24 32 26" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M20 12 L22 9 M28 12 L26 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+        <path d="M14 38 L18 32 M24 40 L24 34 M34 38 L30 32" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+      </svg>`,
+
+      bored: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+        <rect x="17" y="17" width="5" height="3" rx="1.5"/>
+        <rect x="26" y="17" width="5" height="3" rx="1.5"/>
+        <path d="M17 27 L31 27" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <path d="M14 38 Q24 34 34 38" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.4"/>
+      </svg>`,
+
+      grateful: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="19" cy="17" r="2.5"/>
+        <circle cx="29" cy="17" r="2.5"/>
+        <path d="M16 25 C18 30 30 30 32 25" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M24 35 L20 44 M24 35 L28 44" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.5"/>
+        <path d="M18 38 C18 36 20 35 22 36 C22 34 26 34 26 36 C28 35 30 36 30 38 L24 44Z" opacity="0.5"/>
+      </svg>`,
+
+      inpain: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="20" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+        <circle cx="19" cy="17" r="2.5"/>
+        <circle cx="29" cy="17" r="2.5"/>
+        <path d="M17 28 C19 25 29 25 31 28" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M10 5 L14 9 M38 5 L34 9 M6 12 L11 13 M42 12 L37 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+      </svg>`,
+
+      // ── New Medical icons ──────────────────────────────────────────────────
+      fallen: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="36" cy="9" r="5"/>
+        <path d="M28 16 C24 14 18 15 14 20 L8 30 L14 33 L18 26 L22 28 L14 42 L22 42 L28 30 L34 34 L40 24 Z" opacity="0.9"/>
+        <path d="M6 44 L42 44" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.4"/>
+      </svg>`,
+
+      feelswrong: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="24" r="19" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M24 10 L24 27" stroke="currentColor" stroke-width="4" stroke-linecap="round" fill="none"/>
+        <circle cx="24" cy="33" r="3.5"/>
+      </svg>`,
+
+      backpain: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="7" r="5"/>
+        <path d="M20 14 C20 14 16 20 16 28 L20 28 L20 44 L28 44 L28 28 L32 28 C32 20 28 14 28 14Z" opacity="0.9"/>
+        <path d="M34 16 L40 12 M36 22 L43 20 M35 28 L42 28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.7"/>
+      </svg>`,
+
+      stomachpain: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="7" r="5"/>
+        <path d="M18 14 L14 44 L22 44 L24 32 L26 44 L34 44 L30 14Z" opacity="0.85"/>
+        <path d="M16 26 Q24 30 32 26" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <path d="M8 22 L14 20 M8 28 L14 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.6"/>
+      </svg>`,
+
+      showme: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <path d="M20 6 L20 26 L14 22 C12 21 10 22 10 24 C10 25 10 26 12 27 L24 38 L36 38 L36 24 C36 22 34 21 32 22 L28 24 L28 6 C28 4 26 3 24 3 C22 3 20 4 20 6Z" opacity="0.9"/>
+        <path d="M8 42 L40 42" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.4"/>
+      </svg>`,
+
+      // ── Fallback for tired (reused from md6 which was removed) ─────────────
+      tired: `<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">
+        <circle cx="24" cy="18" r="13" fill="none" stroke="currentColor" stroke-width="3"/>
+        <path d="M16 15 L22 15 M26 15 L32 15" stroke="currentColor" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M17 24 C19 28 29 28 31 24" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M14 36 L18 30 M24 38 L24 32 M34 36 L30 30" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
       </svg>`,
 
     }; // end ICONS
@@ -2049,7 +2232,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v18';
+const CACHE = 'aac-v19';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2268,24 +2451,33 @@ self.addEventListener('fetch', e => {
       let brushSize   = 6;
       let eraserMode  = false;
 
+      let wbInitialised = false; // track whether canvas has been sized yet
+
       function openWB() {
         overlay.classList.add('open');
-        // Set up canvas dimensions after overlay is visible
-        requestAnimationFrame(() => {
-          const dpr    = window.devicePixelRatio || 1;
-          const w      = canvas.offsetWidth;
-          const h      = canvas.offsetHeight;
-          canvas.width  = w * dpr;
-          canvas.height = h * dpr;
-          ctx = canvas.getContext('2d');
-          ctx.scale(dpr, dpr);
-          ctx.lineCap  = 'round';
-          ctx.lineJoin = 'round';
-        });
+        if (!wbInitialised) {
+          // First open only — set canvas dimensions and context.
+          // Resizing canvas after this point would wipe the drawing.
+          requestAnimationFrame(() => {
+            const dpr    = window.devicePixelRatio || 1;
+            const w      = canvas.offsetWidth;
+            const h      = canvas.offsetHeight;
+            canvas.width  = w * dpr;
+            canvas.height = h * dpr;
+            ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            ctx.lineCap  = 'round';
+            ctx.lineJoin = 'round';
+            wbInitialised = true;
+          });
+        }
+        // On subsequent opens, ctx and canvas dimensions are already set —
+        // the drawing is preserved exactly as the user left it.
       }
 
       function closeWB() {
         overlay.classList.remove('open');
+        // Drawing stays on canvas — only wbClear button wipes it.
       }
 
       // Unified pointer events — works for touch, stylus, and mouse in one handler.
@@ -2372,7 +2564,13 @@ self.addEventListener('fetch', e => {
 
       // Clear
       document.getElementById('wbClear').addEventListener('click', () => {
-        if (ctx) ctx.clearRect(0, 0, canvas.width / (window.devicePixelRatio || 1), canvas.height / (window.devicePixelRatio || 1));
+        if (ctx) {
+          // Save and restore transform so clearRect always hits the full canvas
+          ctx.save();
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.restore();
+        }
       });
 
       // Open / Close
@@ -2405,7 +2603,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.15';
+    const APP_VERSION = '1.2.16';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
