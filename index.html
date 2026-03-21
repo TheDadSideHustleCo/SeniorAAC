@@ -16,21 +16,12 @@
        One-time purchase · No subscription · No Wi-Fi
        =========================================== */
 
-  *, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  -webkit-tap-highlight-color: transparent;
-}
-/* === FIX #1: Prevent SVG from stealing taps on iPad === */
-button svg {
-  pointer-events: none;
-}
-/* === FIX #2: Make taps count as real user gestures === */
-button {
-  touch-action: manipulation;
-}
-
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
 
     :root {
       --bg:            #000000;
@@ -81,12 +72,6 @@ button {
       border-bottom: 2px solid #330000;
       flex-shrink: 0;
       height: var(--header-h);
-	  /* === FIX #5: Fix Safari flexbox tap bug when body has overflow:hidden === */
-     .header {
-      position: relative;
-      z-index: 10;
-}
-
     }
 
     .btn-panic {
@@ -107,23 +92,11 @@ button {
       gap: 10px;
       height: 52px;
       transition: background 0.1s, transform 0.1s;
-      /* === FIX #4: Keep text unselectable without breaking tap recognition === */
-     .btn-panic span,
-     .btn-icon-sm span {
-     user-select: none;
-    -webkit-user-select: none;
-}
-
+      user-select: none;
+      -webkit-user-select: none;
       -webkit-touch-callout: none;
     }
     .btn-panic:active  { background: #dc2626; transform: scale(0.97); }
-	/* === FIX #3: Disable transform on touch devices (iPad audio bug) === */
-    @media (pointer: coarse) {
-   .btn-panic:active {
-    transform: none;
-  }
-}
-
     .btn-panic svg     { width: 26px; height: 26px; flex-shrink: 0; }
 
     .btn-icon-sm {
@@ -1050,14 +1023,6 @@ button {
        SENIOR AAC COMMUNICATION BOARD — v1.0
        Single-file · Offline · No subscription · No Wi-Fi
        ==================================================== */
-  /* === OPTIONAL FIX: Universal Web Audio Unlock for iPad/Android ===
-       This ensures the first touch anywhere on the screen unlocks audio.
-       It prevents the "button animates but no sound" issue on older devices.
-    */
-    window.addEventListener('touchstart', () => {
-      const ctx = new (window.AudioContext || window.webkitAudioContext)();
-      if (ctx.resume) ctx.resume();
-    }, { once: true });
 
     // ===================================================
     // 1. BUTTON DATA
@@ -1650,15 +1615,15 @@ button {
     }
 
     // ===================================================
-    // 7. PANIC CHIME  (Web Audio API)
-    // iOS fix: create a FRESH AudioContext on every press, called synchronously
-    // inside the click handler. A new context starts in 'running' state on iOS
-    // 14.5+ when created within a user gesture — no resume() needed, no stale
-    // suspended-context issues. Matches TinyTalker Pro approach.
+    // 7. PANIC CHIME  (Web Audio API — iOS safe)
+    // Fresh context on every press (no stale suspended state).
+    // ctx.resume() added per Copilot debug — belt-and-suspenders for older iOS.
+    // The touchstart listener uses passive:false so iOS grants the gesture unlock.
     // ===================================================
     function playPanicChime() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        ctx.resume().catch(() => {}); // belt-and-suspenders for pre-14.5 iOS
         const notes = [
           { f: 880,  t: 0.00, d: 0.22 },
           { f: 660,  t: 0.28, d: 0.18 },
@@ -1929,18 +1894,21 @@ button {
     // ===================================================
     // 12. EVENT LISTENERS
     // ===================================================
-    // PANIC: use touchstart (fires synchronously in gesture context on iOS —
-    // click is synthesized AFTER the gesture and loses the AudioContext unlock).
-    // Flag prevents the ghost-click from double-firing on touch devices.
+    // PANIC: passive:false is critical on iOS — passive:true lets the browser
+    // deprioritize the handler and iOS will NOT honour it as a user-gesture for
+    // AudioContext unlock. passive:false forces synchronous main-thread execution.
+    // e.preventDefault() with passive:false also kills the ghost-click entirely,
+    // so we don't need the touchFired flag for that — but keep it for safety.
     (function() {
       const btn = document.getElementById('panicBtn');
       let touchFired = false;
-      btn.addEventListener('touchstart', function() {
+      btn.addEventListener('touchstart', function(e) {
+        e.preventDefault(); // kill ghost click (only possible with passive:false)
         touchFired = true;
         playPanicChime();
-      }, { passive: true });
+      }, { passive: false });
       btn.addEventListener('click', function() {
-        if (touchFired) { touchFired = false; return; } // swallow ghost click
+        if (touchFired) { touchFired = false; return; }
         playPanicChime(); // desktop / mouse fallback
       });
     })();
@@ -2014,7 +1982,7 @@ button {
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v7';
+const CACHE = 'aac-v8';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2330,7 +2298,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.4';
+    const APP_VERSION = '1.2.5';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
