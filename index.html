@@ -2049,7 +2049,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v16';
+const CACHE = 'aac-v17';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2153,8 +2153,38 @@ self.addEventListener('fetch', e => {
       speakBtn.addEventListener('click', speakTyped);
       clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); });
       input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); speakTyped(); }
+        if (e.key === 'Enter') { e.preventDefault(); speakTyped(); input.blur(); }
       });
+
+      // iOS keyboard dismiss fix: when the virtual keyboard closes after
+      // typing in the TTS bar, scroll the page back to the top so the
+      // layout snaps back to its natural position.
+      if (window.visualViewport) {
+        let _ttsVpHandler = null;
+        input.addEventListener('focus', () => {
+          _ttsVpHandler = () => {
+            // Keyboard has fully closed when viewport height is close to window height
+            if (window.visualViewport.height > window.innerHeight * 0.75) {
+              window.scrollTo({ top: 0, behavior: 'instant' });
+              document.documentElement.scrollTop = 0;
+              document.body.scrollTop = 0;
+            }
+          };
+          window.visualViewport.addEventListener('resize', _ttsVpHandler);
+        });
+        input.addEventListener('blur', () => {
+          if (_ttsVpHandler) {
+            window.visualViewport.removeEventListener('resize', _ttsVpHandler);
+            _ttsVpHandler = null;
+          }
+          // Force scroll back to top after keyboard dismisses
+          requestAnimationFrame(() => {
+            window.scrollTo({ top: 0, behavior: 'instant' });
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+          });
+        });
+      }
     })();
 
     // ===================================================
@@ -2375,7 +2405,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.13';
+    const APP_VERSION = '1.2.14';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
