@@ -12,7 +12,7 @@
 
   <style>
     /* ===========================================
-       SENIOR AAC COMMUNICATION BOARD  v1.0
+       SENIOR AAC COMMUNICATION BOARD  v1.2.16
        One-time purchase · No subscription · No Wi-Fi
        =========================================== */
 
@@ -137,7 +137,7 @@
       color: #000;
       padding: 5px 10px;
       font-weight: 900;
-      font-size: 13px;
+      font-size: 14px;
       letter-spacing: 0.5px;
       flex-shrink: 0;
       align-items: center;
@@ -226,7 +226,7 @@
     .pain-btn:active { transform: scale(0.95); filter: brightness(1.2); }
     .pain-btn svg    { width: 30px; height: 30px; flex-shrink: 0; }
     .pain-num  { font-size: 15px; font-weight: 900; line-height: 1; }
-    .pain-word { font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    .pain-word { font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
                  text-transform: uppercase; line-height: 1; text-align: center; }
 
     /* 5-level Wong-Baker inspired scale — green → red */
@@ -253,7 +253,7 @@
       border: none;
       border-bottom: 3px solid transparent;
       color: #555;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 700;
       cursor: pointer;
       padding: 0 10px;
@@ -549,9 +549,9 @@
       gap: 6px;
       flex-wrap: wrap;
     }
-    .footer-legal   { color: #c0c0c0; font-size: 11px; font-weight: 700; }
-    .footer-mute    { color: #FFD700; font-size: 11px; font-weight: 700; font-style: italic; }
-    .footer-version { color: #444; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .footer-legal   { color: #c0c0c0; font-size: 12px; font-weight: 700; }
+    .footer-mute    { color: #FFD700; font-size: 12px; font-weight: 700; font-style: italic; }
+    .footer-version { color: #444; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 
 
     /* ======================================
@@ -2232,7 +2232,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v19';
+const CACHE = 'aac-v20';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2603,7 +2603,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.16';
+    const APP_VERSION = '1.2.17';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
