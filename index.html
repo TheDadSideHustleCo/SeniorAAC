@@ -486,8 +486,8 @@
     .emoji-picker-grid {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
-      gap: 3px;
-      max-height: 196px;      /* ~4 rows visible */
+      gap: 4px;
+      max-height: 240px;      /* ~3.5 rows at larger size */
       overflow-y: scroll;     /* scroll not auto — more reliable on iOS */
       -webkit-overflow-scrolling: touch;
       touch-action: pan-y;    /* tell iOS this element scrolls vertically */
@@ -498,7 +498,7 @@
       padding: 6px;
     }
     .emoji-pick-btn {
-      font-size: 26px;
+      font-size: 34px;
       line-height: 1;
       background: transparent;
       border: 2px solid transparent;
@@ -1540,12 +1540,12 @@
 
     // ── Emoji picker setup ──────────────────────────────────────────────────
     const EMOJI_LIST = [
-      '😊','😢','😴','😠','😨','😍','🤒','🤕',   // feelings
-      '👍','👎','🙏','👋','✋','🤝','💪','🖐️',   // gestures
-      '💊','🩺','🛁','🚿','🪥','🧴','🩹','🌡️',   // medical
-      '🍎','🥤','☕','🍵','🥣','🍽️','💧','🧃',   // food/drink
-      '📺','📖','🎵','🧩','🌸','🌞','🌧️','🏠',   // activities
-      '✅','❌','⚠️','❓','💬','⭐','❤️','🔔',   // symbols
+      '👶','🧒','👵','👴','🐕','🐱','🤗','🎉',   // family & people
+      '✈️','⛪','🌳','🏪','🛒','📅','⏰','🎁',   // outings & schedule
+      '🎨','✂️','🧶','🃏','🎲','📻','🎬','🌸',   // hobbies & fun
+      '☕','🍵','🥛','🍕','🥗','🥪','🍰','🫖',   // food & drink
+      '💇','💅','👗','🪥','🧴','🩹','🎵','🌞',   // personal care
+      '😌','😮','🤔','👋','💪','❤️','⭐','🔔',   // mood & symbols
     ];
     (function buildEmojiPicker() {
       const grid = document.getElementById('emojiPickerGrid');
@@ -2042,7 +2042,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v13';
+const CACHE = 'aac-v15';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2367,7 +2367,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.10';
+    const APP_VERSION = '1.2.12';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
