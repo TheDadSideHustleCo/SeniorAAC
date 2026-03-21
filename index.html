@@ -1982,7 +1982,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v8';
+const CACHE = 'aac-v9';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2126,6 +2126,9 @@ self.addEventListener('fetch', e => {
     function onHoldStart(e) {
       e.preventDefault();
       const el = e.currentTarget;
+      // Capture the pointer so a slight finger drift doesn't fire pointerleave
+      // and cancel the hold — common on tremor-affected users on iPad.
+      try { el.setPointerCapture(e.pointerId); } catch(_) {}
       if (isEditMode) { openEditOverlay(el.getAttribute('data-id'), el); return; }
       cancelHold();
       holdTarget = el;
@@ -2143,6 +2146,7 @@ self.addEventListener('fetch', e => {
     }
 
     function onHoldEnd(e) {
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch(_) {}
       cancelHold();
     }
 
@@ -2187,18 +2191,24 @@ self.addEventListener('fetch', e => {
         overlay.classList.remove('open');
       }
 
+      // Unified pointer events — works for touch, stylus, and mouse in one handler.
+      // setPointerCapture keeps draw events routed to the canvas even if the
+      // finger drifts outside, eliminating the broken-line bug on iPad.
+      // touch-action:none on #wbCanvas (already in CSS) suppresses browser
+      // scroll/zoom so we don't need e.preventDefault() on pointermove.
+
       function getPos(e) {
         const rect = canvas.getBoundingClientRect();
-        const touch = e.touches ? e.touches[0] : e;
         return {
-          x: touch.clientX - rect.left,
-          y: touch.clientY - rect.top
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top
         };
       }
 
       function startDraw(e) {
-        e.preventDefault();
         if (!ctx) return;
+        e.preventDefault();
+        canvas.setPointerCapture(e.pointerId); // lock events to this canvas
         drawing = true;
         const pos = getPos(e);
         lastX = pos.x; lastY = pos.y;
@@ -2209,9 +2219,8 @@ self.addEventListener('fetch', e => {
       }
 
       function doDraw(e) {
-        e.preventDefault();
         if (!drawing || !ctx) return;
-        const pos  = getPos(e);
+        const pos = getPos(e);
         ctx.globalCompositeOperation = eraserMode ? 'destination-out' : 'source-over';
         ctx.strokeStyle = wbColor;
         ctx.lineWidth   = eraserMode ? brushSize * 5 : brushSize;
@@ -2222,17 +2231,15 @@ self.addEventListener('fetch', e => {
         lastX = pos.x; lastY = pos.y;
       }
 
-      function endDraw(e) { e.preventDefault(); drawing = false; }
+      function endDraw(e) {
+        drawing = false;
+        try { canvas.releasePointerCapture(e.pointerId); } catch(_) {}
+      }
 
-      // Touch events
-      canvas.addEventListener('touchstart',  startDraw, { passive: false });
-      canvas.addEventListener('touchmove',   doDraw,    { passive: false });
-      canvas.addEventListener('touchend',    endDraw,   { passive: false });
-      canvas.addEventListener('touchcancel', endDraw,   { passive: false });
-      // Mouse events (desktop testing)
-      canvas.addEventListener('mousedown',  startDraw);
-      canvas.addEventListener('mousemove',  e => { if (e.buttons === 1) doDraw(e); });
-      canvas.addEventListener('mouseup',    endDraw);
+      canvas.addEventListener('pointerdown',   startDraw);
+      canvas.addEventListener('pointermove',   doDraw);
+      canvas.addEventListener('pointerup',     endDraw);
+      canvas.addEventListener('pointercancel', endDraw);
 
       // Color buttons
       function setColor(hex, btn) {
@@ -2298,7 +2305,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.5';
+    const APP_VERSION = '1.2.6';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
