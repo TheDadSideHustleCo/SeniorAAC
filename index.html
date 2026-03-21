@@ -2049,7 +2049,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v17';
+const CACHE = 'aac-v18';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2145,13 +2145,13 @@ self.addEventListener('fetch', e => {
 
       function speakTyped() {
         const text = input.value.trim();
-        if (!text) { input.focus(); return; }
+        if (!text) return;   // nothing to speak — don't open keyboard
         speak(text, speakBtn);
-        input.select();
+        input.blur();        // dismiss keyboard after speaking
       }
 
       speakBtn.addEventListener('click', speakTyped);
-      clearBtn.addEventListener('click', () => { input.value = ''; input.focus(); });
+      clearBtn.addEventListener('click', () => { input.value = ''; input.blur(); });
       input.addEventListener('keydown', e => {
         if (e.key === 'Enter') { e.preventDefault(); speakTyped(); input.blur(); }
       });
@@ -2405,7 +2405,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.14';
+    const APP_VERSION = '1.2.15';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
