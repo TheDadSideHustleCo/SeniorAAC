@@ -1616,35 +1616,45 @@
 
     // ===================================================
     // 7. PANIC CHIME  (Web Audio API — iOS safe)
-    // Fresh context on every press (no stale suspended state).
-    // ctx.resume() added per Copilot debug — belt-and-suspenders for older iOS.
-    // The touchstart listener uses passive:false so iOS grants the gesture unlock.
+    //
+    // Root cause of silence on iPad:
+    //   new AudioContext() on iOS starts in 'suspended' state even inside a
+    //   gesture handler. ctx.currentTime is 0 while suspended, so scheduling
+    //   notes at ctx.currentTime + n.t puts them all in the past by the time
+    //   resume() finishes — they never fire.
+    //
+    // Fix: call ctx.resume() and schedule ALL notes inside the .then() callback,
+    //   which runs only after the context is confirmed 'running'. At that point
+    //   ctx.currentTime has started advancing and the scheduled times are correct.
+    //   The iOS gesture-window restriction only applies to creating/resuming the
+    //   context (both done synchronously here), not to scheduling oscillators.
     // ===================================================
     function playPanicChime() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        ctx.resume().catch(() => {}); // belt-and-suspenders for pre-14.5 iOS
-        const notes = [
-          { f: 880,  t: 0.00, d: 0.22 },
-          { f: 660,  t: 0.28, d: 0.18 },
-          { f: 880,  t: 0.52, d: 0.22 },
-          { f: 660,  t: 0.78, d: 0.18 },
-          { f: 1047, t: 1.02, d: 0.45 },
-        ];
-        notes.forEach(n => {
-          const osc  = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          osc.type            = 'sine';
-          osc.frequency.value = n.f;
-          gain.gain.setValueAtTime(0, ctx.currentTime + n.t);
-          gain.gain.linearRampToValueAtTime(0.85, ctx.currentTime + n.t + 0.02);
-          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
-          osc.start(ctx.currentTime + n.t);
-          osc.stop(ctx.currentTime + n.t + n.d + 0.05);
-        });
-        flashButton(document.getElementById('panicBtn'));
+        ctx.resume().then(() => {
+          const notes = [
+            { f: 880,  t: 0.00, d: 0.22 },
+            { f: 660,  t: 0.28, d: 0.18 },
+            { f: 880,  t: 0.52, d: 0.22 },
+            { f: 660,  t: 0.78, d: 0.18 },
+            { f: 1047, t: 1.02, d: 0.45 },
+          ];
+          notes.forEach(n => {
+            const osc  = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type            = 'sine';
+            osc.frequency.value = n.f;
+            gain.gain.setValueAtTime(0, ctx.currentTime + n.t);
+            gain.gain.linearRampToValueAtTime(0.85, ctx.currentTime + n.t + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.t + n.d);
+            osc.start(ctx.currentTime + n.t);
+            osc.stop(ctx.currentTime + n.t + n.d + 0.05);
+          });
+          flashButton(document.getElementById('panicBtn'));
+        }).catch(e => console.warn('Audio resume failed:', e));
       } catch(e) {
         console.warn('Web Audio not available:', e);
       }
@@ -1982,7 +1992,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v9';
+const CACHE = 'aac-v10';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2305,7 +2315,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.6';
+    const APP_VERSION = '1.2.7';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
