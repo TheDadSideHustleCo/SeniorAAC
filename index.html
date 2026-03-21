@@ -414,9 +414,11 @@
       z-index: 200;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 14px;
       padding: 24px 20px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
     .edit-overlay.open { display: flex; }
 
@@ -1849,6 +1851,11 @@
           overlay.style.height = window.visualViewport.height + 'px';
           overlay.style.top    = window.visualViewport.offsetTop  + 'px';
           overlay.style.bottom = 'auto';
+          // Scroll the input field into view after viewport settles
+          requestAnimationFrame(() => {
+            const inp = document.getElementById('editInput');
+            if (inp) inp.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          });
         };
         window.visualViewport.addEventListener('resize', _vpResizeHandler);
         window.visualViewport.addEventListener('scroll', _vpResizeHandler);
@@ -2042,7 +2049,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v15';
+const CACHE = 'aac-v16';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2360,6 +2367,7 @@ self.addEventListener('fetch', e => {
     document.addEventListener('touchmove', e => {
       if (e.target.closest('.grid-wrap'))        return;
       if (e.target.closest('.emoji-picker-grid')) return;
+      if (e.target.closest('.edit-overlay'))      return;
       e.preventDefault();
     }, { passive: false });
 
@@ -2367,7 +2375,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.12';
+    const APP_VERSION = '1.2.13';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
