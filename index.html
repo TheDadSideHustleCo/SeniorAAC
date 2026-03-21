@@ -474,6 +474,60 @@
       font-family: Arial, Verdana, sans-serif;
     }
 
+    /* ── Emoji tap picker ───────────────────── */
+    .emoji-picker-wrap {
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .emoji-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 3px;
+      max-height: 150px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      width: 100%;
+      background: #111;
+      border: 2px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 6px;
+    }
+    .emoji-pick-btn {
+      font-size: 26px;
+      line-height: 1;
+      background: transparent;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      padding: 3px 2px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1;
+    }
+    .emoji-pick-btn.ep-selected {
+      background: rgba(255,215,0,0.18);
+      border-color: var(--gold);
+    }
+    .emoji-no-icon-btn {
+      font-size: 13px;
+      color: #666;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 5px 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    .emoji-no-icon-btn.ep-selected { color: var(--gold); border-color: var(--gold); }
+
     .edit-reset {
       background: transparent;
       color: #555;
@@ -977,12 +1031,11 @@
     <h2 id="editHeading">✏️ Edit Button</h2>
     <p>Label — max 18 characters</p>
     <input class="edit-input" type="text" id="editInput" maxlength="18" placeholder="Enter label…" autocomplete="off" autocorrect="off" spellcheck="false">
-    <p style="color:#666;font-size:13px;margin:-4px 0 0">Icon — paste or type an emoji (leave blank to keep original)</p>
-    <input type="text" id="editEmojiInput" maxlength="8"
-           placeholder="😊"
-           autocomplete="off" autocorrect="off" spellcheck="false"
-           aria-label="Emoji icon (optional)"
-           style="width:88px;font-size:38px;text-align:center;background:#1a1a1a;border:2px solid #444;border-radius:12px;padding:6px 4px;color:#fff;outline:none;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;line-height:1;touch-action:auto;-webkit-user-select:text;user-select:text;">
+    <div class="emoji-picker-wrap">
+      <p style="color:#666;font-size:13px;margin:0;text-align:center">Icon — tap to change (tap again to deselect)</p>
+      <div class="emoji-picker-grid" id="emojiPickerGrid"></div>
+      <button class="emoji-no-icon-btn" id="emojiNoIconBtn" type="button">↺ Use original icon</button>
+    </div>
     <button class="edit-save"   id="editSaveBtn">✓ Save</button>
     <button class="edit-cancel" id="editCancelBtn">✕ Cancel</button>
     <button class="edit-reset"  id="editResetBtn">↺ Reset to original</button>
@@ -1481,7 +1534,47 @@
     let editingEl    = null;
     const DEBOUNCE   = 500; // ms — anti-tremor
     const lastClick  = {};  // { buttonId: timestamp }
-    // audioCtx removed — PANIC creates a fresh context on each press (iOS safe)
+    // audioCtx removed — PANIC uses Audio element now (no AudioContext needed)
+    let pendingEmoji = null; // null=no change, ''=clear icon, string=new emoji
+
+    // ── Emoji picker setup ──────────────────────────────────────────────────
+    const EMOJI_LIST = [
+      '😊','😢','😴','😠','😨','😍','🤒','🤕',   // feelings
+      '👍','👎','🙏','👋','✋','🤝','💪','🖐️',   // gestures
+      '💊','🩺','🛁','🚿','🪥','🧴','🩹','🌡️',   // medical
+      '🍎','🥤','☕','🍵','🥣','🍽️','💧','🧃',   // food/drink
+      '📺','📖','🎵','🧩','🌸','🌞','🌧️','🏠',   // activities
+      '✅','❌','⚠️','❓','💬','⭐','❤️','🔔',   // symbols
+    ];
+    (function buildEmojiPicker() {
+      const grid = document.getElementById('emojiPickerGrid');
+      EMOJI_LIST.forEach(em => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'emoji-pick-btn';
+        btn.setAttribute('data-emoji', em);
+        btn.setAttribute('aria-label', em);
+        btn.textContent = em;
+        btn.addEventListener('click', () => {
+          if (pendingEmoji === em) {
+            // Tap same emoji again = deselect (leave icon unchanged)
+            pendingEmoji = null;
+            btn.classList.remove('ep-selected');
+          } else {
+            pendingEmoji = em;
+            document.querySelectorAll('.emoji-pick-btn').forEach(b => b.classList.remove('ep-selected'));
+            document.getElementById('emojiNoIconBtn').classList.remove('ep-selected');
+            btn.classList.add('ep-selected');
+          }
+        });
+        grid.appendChild(btn);
+      });
+      document.getElementById('emojiNoIconBtn').addEventListener('click', () => {
+        pendingEmoji = ''; // '' = clear emoji, restore original SVG icon
+        document.querySelectorAll('.emoji-pick-btn').forEach(b => b.classList.remove('ep-selected'));
+        document.getElementById('emojiNoIconBtn').classList.add('ep-selected');
+      });
+    })();
 
     // ===================================================
     // 4. LOCAL STORAGE HELPERS
@@ -1739,9 +1832,13 @@
       editingEl = el;
       const currentLabel = el.querySelector('.btn-label').textContent;
       document.getElementById('editInput').value = currentLabel;
-      // Pre-fill emoji if one is set
-      const emojiEl = el.querySelector('.btn-emoji');
-      document.getElementById('editEmojiInput').value = emojiEl ? emojiEl.textContent : '';
+      // Pre-select current emoji in picker (if one is set)
+      pendingEmoji = null; // null = "no change made yet"
+      const currentEmoji = loadEmojis()[id] || '';
+      document.querySelectorAll('.emoji-pick-btn').forEach(b => {
+        b.classList.toggle('ep-selected', b.getAttribute('data-emoji') === currentEmoji && currentEmoji !== '');
+      });
+      document.getElementById('emojiNoIconBtn').classList.remove('ep-selected');
       const overlay = document.getElementById('editOverlay');
       overlay.classList.add('open');
       // iOS keyboard gap fix: when the virtual keyboard appears/disappears,
@@ -1788,20 +1885,18 @@
       saveLabel(editingId, raw);
 
       // ── Emoji icon ─────────────────────────────────────
-      // Emoji: use the full trimmed value — preserves skin tones, ZWJ sequences,
-      // flags, etc. No grapheme splitting needed since input maxlength="8" already
-      // limits it to roughly one emoji.
-      const emoji = document.getElementById('editEmojiInput').value.trim();
-      const iconWrap  = editingEl.querySelector('.btn-icon-wrap');
-      if (iconWrap) {
-        if (emoji) {
-          iconWrap.innerHTML = `<span class="btn-emoji" style="font-size:40px;line-height:1">${emoji}</span>`;
-          saveEmoji(editingId, emoji);
-        } else {
-          // Blank = restore original SVG
+      // pendingEmoji: null = user made no change (leave as-is),
+      //              ''   = user chose "Use original icon" (clear),
+      //              str  = user tapped an emoji (apply it)
+      const iconWrap = editingEl.querySelector('.btn-icon-wrap');
+      if (iconWrap && pendingEmoji !== null) {
+        if (pendingEmoji === '') {
           const origIcon = editingEl.getAttribute('data-icon');
           iconWrap.innerHTML = ICONS[origIcon] || '';
           removeEmoji(editingId);
+        } else {
+          iconWrap.innerHTML = `<span class="btn-emoji" style="font-size:40px;line-height:1">${pendingEmoji}</span>`;
+          saveEmoji(editingId, pendingEmoji);
         }
       }
 
@@ -1839,6 +1934,9 @@
       const iconWrap = editingEl.querySelector('.btn-icon-wrap');
       if (iconWrap) iconWrap.innerHTML = ICONS[origIcon] || '';
       removeEmoji(editingId);
+      pendingEmoji = null;
+      document.querySelectorAll('.emoji-pick-btn').forEach(b => b.classList.remove('ep-selected'));
+      document.getElementById('emojiNoIconBtn').classList.remove('ep-selected');
 
       // ── Speak text ─────────────────────────────────────
       // Restore original speak from data (re-read from button data)
@@ -1901,11 +1999,7 @@
       if (e.key === 'Enter')  saveEdit();
       if (e.key === 'Escape') closeEditOverlay();
     });
-    // Also save when pressing Enter/Done on the emoji input keyboard
-    document.getElementById('editEmojiInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter')  saveEdit();
-      if (e.key === 'Escape') closeEditOverlay();
-    });
+
 
     // Close edit overlay on backdrop click
     document.getElementById('editOverlay').addEventListener('click', e => {
@@ -1947,7 +2041,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v11';
+const CACHE = 'aac-v12';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2270,7 +2364,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.8';
+    const APP_VERSION = '1.2.9';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
