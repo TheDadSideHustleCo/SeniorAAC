@@ -12,7 +12,7 @@
 
   <style>
     /* ===========================================
-       SENIOR AAC COMMUNICATION BOARD  v1.2.16
+       SENIOR AAC COMMUNICATION BOARD  v1.2.17
        One-time purchase · No subscription · No Wi-Fi
        =========================================== */
 
@@ -112,7 +112,7 @@
       gap: 3px;
       cursor: pointer;
       color: #888;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: bold;
       flex-shrink: 0;
       transition: border-color 0.2s, color 0.2s;
@@ -156,7 +156,7 @@
       border: 2px solid rgba(0,0,0,0.25);
       border-radius: 8px;
       padding: 4px 10px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 900;
       cursor: pointer;
       font-family: Arial, Verdana, sans-serif;
@@ -193,7 +193,7 @@
       text-orientation: mixed;
       transform: rotate(180deg);
       color: #555;
-      font-size: 10px;
+      font-size: 13px;
       font-weight: 900;
       letter-spacing: 2px;
       text-transform: uppercase;
@@ -226,7 +226,7 @@
     .pain-btn:active { transform: scale(0.95); filter: brightness(1.2); }
     .pain-btn svg    { width: 30px; height: 30px; flex-shrink: 0; }
     .pain-num  { font-size: 15px; font-weight: 900; line-height: 1; }
-    .pain-word { font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+    .pain-word { font-size: 13px; font-weight: 700; letter-spacing: 0.3px;
                  text-transform: uppercase; line-height: 1; text-align: center; }
 
     /* 5-level Wong-Baker inspired scale — green → red */
@@ -303,7 +303,7 @@
       #board-daily.active,
       #board-feelings.active,
       #board-medical.active,
-      #board-custom.active  { grid-template-columns: repeat(8, 1fr); grid-template-rows: repeat(2, 1fr); }
+      #board-custom.active  { grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); }
     }
 
     /* Small phone fallback — allow scroll if screen is too short */
@@ -549,9 +549,9 @@
       gap: 6px;
       flex-wrap: wrap;
     }
-    .footer-legal   { color: #c0c0c0; font-size: 12px; font-weight: 700; }
-    .footer-mute    { color: #FFD700; font-size: 12px; font-weight: 700; font-style: italic; }
-    .footer-version { color: #444; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .footer-legal   { color: #c0c0c0; font-size: 13px; font-weight: 700; }
+    .footer-mute    { color: #FFD700; font-size: 13px; font-weight: 700; font-style: italic; }
+    .footer-version { color: #444; font-size: 13px; font-weight: 700; flex-shrink: 0; }
 
 
     /* ======================================
@@ -670,7 +670,7 @@
 
     .wb-label {
       color: #555;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 900;
       letter-spacing: 1px;
       text-transform: uppercase;
@@ -764,7 +764,7 @@
     .wb-hint {
       text-align: center;
       color: #1f1f1f;
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 700;
       padding: 3px;
       letter-spacing: 1px;
@@ -2232,7 +2232,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v20';
+const CACHE = 'aac-v21';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2603,7 +2603,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.17';
+    const APP_VERSION = '1.2.18';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
