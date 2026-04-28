@@ -1848,6 +1848,14 @@
     })();
 
     // ===================================================
+    // SECURITY: sanitize user text before innerHTML injection
+    // ===================================================
+    function esc(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // ===================================================
     // 4. LOCAL STORAGE HELPERS
     // ===================================================
     function loadLabels() {
@@ -1924,10 +1932,10 @@
       el.setAttribute('data-icon',    btn.icon); // original icon key (for reset)
       // Icon: saved emoji overrides the SVG
       const iconHtml = emoji
-        ? `<span class="btn-emoji" style="font-size:40px;line-height:1">${emoji}</span>`
+        ? `<span class="btn-emoji" style="font-size:40px;line-height:1">${esc(emoji)}</span>`
         : (ICONS[btn.icon] || '');
       el.innerHTML = `<span class="btn-icon-wrap">${iconHtml}</span>
-                      <span class="btn-label">${label}</span>`;
+                      <span class="btn-label">${esc(label)}</span>`;
       el.addEventListener('click', onCommBtnClick);
       return el;
     }
@@ -2220,7 +2228,7 @@
           iconWrap.innerHTML = ICONS[origIcon] || '';
           removeEmoji(editingId);
         } else {
-          iconWrap.innerHTML = `<span class="btn-emoji" style="font-size:40px;line-height:1">${pendingEmoji}</span>`;
+          iconWrap.innerHTML = `<span class="btn-emoji" style="font-size:40px;line-height:1">${esc(pendingEmoji)}</span>`;
           saveEmoji(editingId, pendingEmoji);
         }
       }
@@ -2246,6 +2254,7 @@
 
     function resetEdit() {
       if (!editingId || !editingEl) return;
+      if (!confirm('Reset this button to its original label, phrase, and icon? This cannot be undone.')) return;
       const def      = editingEl.getAttribute('data-default');
       const origCat  = editingEl.getAttribute('data-cat');
       const origIcon = editingEl.getAttribute('data-icon');
@@ -2367,7 +2376,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v23';
+const CACHE = 'aac-v24';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2400,6 +2409,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     function exportData() {
       const data = {
+        _app:     'SeniorAAC',
         product:  'Senior AAC Communication Board',
         version:  typeof APP_VERSION !== 'undefined' ? APP_VERSION : '1.0',
         exported: new Date().toISOString(),
@@ -2426,7 +2436,17 @@ self.addEventListener('fetch', e => {
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target.result);
+          // Validate it's a real AAC backup
+          if (!data._app || data._app !== 'SeniorAAC') {
+            showImportToast('❌ Not a valid AAC backup file');
+            event.target.value = '';
+            return;
+          }
           if (data.labels && typeof data.labels === 'object') {
+            if (!confirm('Restore backup? This will replace all current button labels, phrases, and emojis.')) {
+              event.target.value = '';
+              return;
+            }
             localStorage.setItem('aac_labels', JSON.stringify(data.labels));
             if (data.cats   && typeof data.cats   === 'object') localStorage.setItem('aac_cats',   JSON.stringify(data.cats));
             if (data.speaks && typeof data.speaks === 'object') localStorage.setItem('aac_speaks', JSON.stringify(data.speaks));
@@ -2738,7 +2758,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.20';
+    const APP_VERSION = '1.2.21';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
