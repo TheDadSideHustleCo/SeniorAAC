@@ -1011,7 +1011,7 @@
     <span class="pain-label-vert" aria-hidden="true">PAIN</span>
 
     <!-- Level 0: No Pain -->
-    <button class="pain-btn pain-0" data-speak="I have no pain right now, zero out of ten" aria-label="No pain — level 0 out of 10">
+    <button class="pain-btn pain-0" data-speak="I have no pain right now, zero out of ten." aria-label="No pain — level 0 out of 10">
       <span class="pain-num">0</span>
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <circle cx="16" cy="16" r="14" fill="#022b12" stroke="#16a34a" stroke-width="2"/>
@@ -1023,7 +1023,7 @@
     </button>
 
     <!-- Level 1–3: Mild -->
-    <button class="pain-btn pain-1" data-speak="I have mild pain, about two out of ten" aria-label="Mild pain — level 1 to 3 out of 10">
+    <button class="pain-btn pain-1" data-speak="I have mild pain, about two out of ten." aria-label="Mild pain — level 1 to 3 out of 10">
       <span class="pain-num">1–3</span>
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <circle cx="16" cy="16" r="14" fill="#1a3300" stroke="#65a30d" stroke-width="2"/>
@@ -1035,7 +1035,7 @@
     </button>
 
     <!-- Level 4–6: Moderate -->
-    <button class="pain-btn pain-2" data-speak="I have moderate pain, about five out of ten" aria-label="Moderate pain — level 4 to 6 out of 10">
+    <button class="pain-btn pain-2" data-speak="I have moderate pain, about five out of ten." aria-label="Moderate pain — level 4 to 6 out of 10">
       <span class="pain-num">4–6</span>
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <circle cx="16" cy="16" r="14" fill="#3d3000" stroke="#ca8a04" stroke-width="2"/>
@@ -1047,7 +1047,7 @@
     </button>
 
     <!-- Level 7–8: Severe -->
-    <button class="pain-btn pain-3" data-speak="I have severe pain, about seven out of ten, please help" aria-label="Severe pain — level 7 to 8 out of 10">
+    <button class="pain-btn pain-3" data-speak="I have severe pain, about seven out of ten, please help." aria-label="Severe pain — level 7 to 8 out of 10">
       <span class="pain-num">7–8</span>
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <circle cx="16" cy="16" r="14" fill="#431200" stroke="#ea580c" stroke-width="2"/>
@@ -1059,7 +1059,7 @@
     </button>
 
     <!-- Level 9–10: Worst -->
-    <button class="pain-btn pain-4" data-speak="My pain is unbearable, ten out of ten. Please get help now" aria-label="Worst pain — level 9 to 10 out of 10">
+    <button class="pain-btn pain-4" data-speak="My pain is unbearable, ten out of ten. Please get help now." aria-label="Worst pain — level 9 to 10 out of 10">
       <span class="pain-num">9–10</span>
       <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
         <circle cx="16" cy="16" r="14" fill="#3b0000" stroke="#dc2626" stroke-width="2"/>
@@ -1110,7 +1110,7 @@
   <div class="edit-overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="editHeading">
     <h2 id="editHeading">✏️ Edit Button</h2>
     <p>Label — max 18 characters</p>
-    <input class="edit-input" type="text" id="editInput" maxlength="18" placeholder="Enter label…" autocomplete="off" autocorrect="off" spellcheck="false">
+    <input class="edit-input" type="text" id="editInput" maxlength="18" placeholder="Enter label…" aria-label="Button label" autocomplete="off" autocorrect="off" spellcheck="false">
     <div class="emoji-picker-wrap">
       <p style="color:#666;font-size:13px;margin:0;text-align:center">Icon — tap to change (tap again to deselect)</p>
       <div class="emoji-picker-grid" id="emojiPickerGrid"></div>
@@ -1858,17 +1858,26 @@
     // ===================================================
     // 4. LOCAL STORAGE HELPERS
     // ===================================================
+    function safeSave(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch(e) {
+        if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+          alert('Storage full — please export your customizations to back them up, then clear some space.');
+        }
+      }
+    }
     function loadLabels() {
       try { return JSON.parse(localStorage.getItem('aac_labels') || '{}'); }
       catch(e) { return {}; }
     }
     function saveLabel(id, text) {
       const d = loadLabels(); d[id] = text;
-      localStorage.setItem('aac_labels', JSON.stringify(d));
+      safeSave('aac_labels', JSON.stringify(d));
     }
     function removeLabel(id) {
       const d = loadLabels(); delete d[id];
-      localStorage.setItem('aac_labels', JSON.stringify(d));
+      safeSave('aac_labels', JSON.stringify(d));
     }
     function loadCats() {
       try { return JSON.parse(localStorage.getItem('aac_cats') || '{}'); }
@@ -1876,11 +1885,11 @@
     }
     function saveCat(id, cat) {
       const d = loadCats(); d[id] = cat;
-      localStorage.setItem('aac_cats', JSON.stringify(d));
+      safeSave('aac_cats', JSON.stringify(d));
     }
     function removeCat(id) {
       const d = loadCats(); delete d[id];
-      localStorage.setItem('aac_cats', JSON.stringify(d));
+      safeSave('aac_cats', JSON.stringify(d));
     }
     // Speak text overrides (for custom/placeholder buttons)
     function loadSpeaks() {
@@ -1889,11 +1898,11 @@
     }
     function saveSpeak(id, text) {
       const d = loadSpeaks(); d[id] = text;
-      localStorage.setItem('aac_speaks', JSON.stringify(d));
+      safeSave('aac_speaks', JSON.stringify(d));
     }
     function removeSpeak(id) {
       const d = loadSpeaks(); delete d[id];
-      localStorage.setItem('aac_speaks', JSON.stringify(d));
+      safeSave('aac_speaks', JSON.stringify(d));
     }
     // Emoji icon overrides
     function loadEmojis() {
@@ -1902,11 +1911,11 @@
     }
     function saveEmoji(id, emoji) {
       const d = loadEmojis(); d[id] = emoji;
-      localStorage.setItem('aac_emojis', JSON.stringify(d));
+      safeSave('aac_emojis', JSON.stringify(d));
     }
     function removeEmoji(id) {
       const d = loadEmojis(); delete d[id];
-      localStorage.setItem('aac_emojis', JSON.stringify(d));
+      safeSave('aac_emojis', JSON.stringify(d));
     }
 
     // ===================================================
@@ -2376,7 +2385,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v24';
+const CACHE = 'aac-v25';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2447,10 +2456,10 @@ self.addEventListener('fetch', e => {
               event.target.value = '';
               return;
             }
-            localStorage.setItem('aac_labels', JSON.stringify(data.labels));
-            if (data.cats   && typeof data.cats   === 'object') localStorage.setItem('aac_cats',   JSON.stringify(data.cats));
-            if (data.speaks && typeof data.speaks === 'object') localStorage.setItem('aac_speaks', JSON.stringify(data.speaks));
-            if (data.emojis && typeof data.emojis === 'object') localStorage.setItem('aac_emojis', JSON.stringify(data.emojis));
+            safeSave('aac_labels', JSON.stringify(data.labels));
+            if (data.cats   && typeof data.cats   === 'object') safeSave('aac_cats',   JSON.stringify(data.cats));
+            if (data.speaks && typeof data.speaks === 'object') safeSave('aac_speaks', JSON.stringify(data.speaks));
+            if (data.emojis && typeof data.emojis === 'object') safeSave('aac_emojis', JSON.stringify(data.emojis));
             renderBoards();
             attachBoardListeners();
             showImportToast('✅ Labels restored successfully');
@@ -2758,7 +2767,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.21';
+    const APP_VERSION = '1.2.22';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
@@ -2792,7 +2801,7 @@ self.addEventListener('fetch', e => {
     }
 
     function dismissUpdate() {
-      localStorage.setItem('aac_update_snooze', String(Date.now()));
+      safeSave('aac_update_snooze', String(Date.now()));
       document.getElementById('updateOverlay').classList.remove('active');
     }
 
@@ -2834,12 +2843,4 @@ self.addEventListener('fetch', e => {
       </div>
       <div class="update-btn-row">
         <button class="update-btn update-btn-export" id="updateBtnExport" onclick="exportAndUpdate()">💾 Export Labels &amp; Update</button>
-        <button class="update-btn update-btn-primary" onclick="doUpdate()">⬆️ Update Now</button>
-        <button class="update-btn update-btn-later"   onclick="dismissUpdate()">Later (remind me in 3 days)</button>
-      </div>
-    </div>
-  </div>
-
-
-</body>
-</html>
+        <button class="update-btn update-btn-primary" onclick="doUpdate()">⬆�
