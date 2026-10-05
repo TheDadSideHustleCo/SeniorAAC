@@ -998,7 +998,7 @@
 
   <!-- ===================== EDIT BANNER ===================== -->
   <div class="edit-banner" role="status" aria-live="polite">
-    <span class="edit-banner-text">✏️ EDIT MODE — Tap any button to rename it</span>
+    <span class="edit-banner-text">✏️ EDIT MODE — Tap a button to change its picture. Custom buttons can also be renamed.</span>
     <div class="edit-banner-actions">
       <button class="edit-banner-btn" id="exportBtn" aria-label="Export button labels to file">💾 Export</button>
       <button class="edit-banner-btn" id="importBtn" aria-label="Import button labels from file">📂 Import</button>
@@ -1109,7 +1109,7 @@
   <!-- ===================== EDIT OVERLAY ===================== -->
   <div class="edit-overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="editHeading">
     <h2 id="editHeading">✏️ Edit Button</h2>
-    <p>Label — max 18 characters</p>
+    <p id="editLabelHint">Label — max 18 characters</p>
     <input class="edit-input" type="text" id="editInput" maxlength="18" placeholder="Enter label…" aria-label="Button label" autocomplete="off" autocorrect="off" spellcheck="false">
     <div class="emoji-picker-wrap">
       <p style="color:#666;font-size:13px;margin:0;text-align:center">Icon — tap to change (tap again to deselect)</p>
@@ -2176,7 +2176,15 @@
       editingId = id;
       editingEl = el;
       const currentLabel = el.querySelector('.btn-label').textContent;
-      document.getElementById('editInput').value = currentLabel;
+      // Built-in buttons keep their label (it matches what is spoken). Only Custom buttons can be renamed.
+      const isCustomBtn = el.classList.contains('cat-placeholder') || el.classList.contains('cat-custom');
+      const editInputEl = document.getElementById('editInput');
+      editInputEl.readOnly = !isCustomBtn;
+      editInputEl.style.opacity = isCustomBtn ? '' : '0.55';
+      document.getElementById('editLabelHint').textContent = isCustomBtn
+        ? 'Label — max 18 characters. This is also what the button says out loud.'
+        : 'Built-in buttons keep their name. Choose a picture below, or use the Custom tab for your own words.';
+      editInputEl.value = currentLabel;
       // Pre-select current emoji in picker (if one is set)
       pendingEmoji = null; // null = "no change made yet"
       const currentEmoji = loadEmojis()[id] || '';
@@ -2203,7 +2211,7 @@
         window.visualViewport.addEventListener('scroll', _vpResizeHandler);
         _vpResizeHandler(); // apply immediately
       }
-      setTimeout(() => document.getElementById('editInput').select(), 120);
+      if (isCustomBtn) setTimeout(() => document.getElementById('editInput').select(), 120);
     }
 
     function closeEditOverlay() {
@@ -2226,13 +2234,16 @@
       if (!editingId || !editingEl) { closeEditOverlay(); return; }
       // Allow save even if label is blank (user may only be changing emoji).
       // Fall back to keeping the current displayed label.
+      const isCustomBtn = editingEl.classList.contains('cat-placeholder') || editingEl.classList.contains('cat-custom');
       const inputVal = document.getElementById('editInput').value.trim();
-      const raw = inputVal || editingEl.querySelector('.btn-label').textContent.trim();
+      const raw = (isCustomBtn && inputVal) ? inputVal : editingEl.querySelector('.btn-label').textContent.trim();
 
-      // ── Label ──────────────────────────────────────────
-      editingEl.querySelector('.btn-label').textContent = raw;
-      editingEl.setAttribute('aria-label', raw);
-      saveLabel(editingId, raw);
+      // ── Label (Custom buttons only; built-in labels stay in step with what is spoken) ──
+      if (isCustomBtn) {
+        editingEl.querySelector('.btn-label').textContent = raw;
+        editingEl.setAttribute('aria-label', raw);
+        saveLabel(editingId, raw);
+      }
 
       // ── Emoji icon ─────────────────────────────────────
       // pendingEmoji: null = user made no change (leave as-is),
@@ -2392,7 +2403,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const swSrc = `
-const CACHE = 'aac-v28';
+const CACHE = 'aac-v29';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
@@ -2774,7 +2785,7 @@ self.addEventListener('fetch', e => {
     // ===================================================
     // APP VERSION & UPDATE CHECK
     // ===================================================
-    const APP_VERSION = '1.2.25';
+    const APP_VERSION = '1.2.26';
     const UPDATE_CHECK_URL = 'https://thedadsidehustleco.github.io/SeniorAAC/';
 
     // Stamp version in footer
