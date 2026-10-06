@@ -2814,7 +2814,7 @@ self.addEventListener('fetch', e => {
       const custom = hasCustomLabels();
       document.getElementById('updateVersionText').textContent = 'v' + newVersion;
       document.getElementById('updateWarningBox').style.display  = custom ? 'block' : 'none';
-      document.getElementById('updateBtnExport').style.display   = custom ? '' : 'none';
+      document.getElementById('updateBtnExport').style.display   = custom ? 'block' : 'none';
       document.getElementById('updateOverlay').classList.add('active');
     }
 
@@ -2859,4 +2859,13 @@ self.addEventListener('fetch', e => {
           <strong>Export your settings first</strong> so you can restore your custom button labels after updating.
         </p>
       </div>
-      <di
+      <div class="update-btn-row">
+        <button class="update-btn update-btn-export" id="updateBtnExport" onclick="exportAndUpdate()">💾 Export Labels &amp; Update</button>
+        <button class="update-btn update-btn-primary" onclick="doUpdate()">⬆️ Update Now</button>
+        <button class="update-btn update-btn-later"   onclick="dismissUpdate()">Later (remind me in 3 days)</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
