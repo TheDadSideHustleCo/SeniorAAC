@@ -7,6 +7,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="AAC Board">
   <meta name="theme-color" content="#000000">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="icon" type="image/png" href="icon-192.png">
   <meta name="description" content="Senior Care AAC Communication Board — offline communication tool for non-verbal seniors. No Wi-Fi required.">
   <title>Senior AAC Communication Board</title>
 
@@ -2373,61 +2376,14 @@
     // 13. PWA — MANIFEST + SERVICE WORKER (INLINE)
     // ===================================================
 
-    // Inject web app manifest as a blob URL
-    (function injectManifest() {
-      try {
-        const manifest = {
-          name: 'Senior AAC Communication Board',
-          short_name: 'AAC Board',
-          description: 'Communication tool for non-verbal seniors. No Wi-Fi required.',
-          theme_color: '#000000',
-          background_color: '#000000',
-          display: 'standalone',
-          orientation: 'any',
-          start_url: 'https://thedadsidehustleco.github.io/SeniorAAC/',
-          icons: [
-            { src: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAIAAADdvvtQAAAB40lEQVR42u3bsRWAIBBEQfqyO4s2NrADTgTc+W8r4CalNUmSJEmSJEmSJEmSJEmSJEmSJEmSJEmSJOV2nJdHEECapOeZp1C/HoZU1cOQqnoYUlUPQ6rqYUgAaaoehlTVw5D63ZBEzNh5ZG5I0jw3JHFDEjoLz5nQwQgdjLQ1HYzQwYgehtDBSPQwRA9D6GBED0OihyF6GKKHIXoYoscYoochehiihyF6jCGAAKKHIXoYoseSDbk6QPQwRA9DAFkQIGdmCCCA6GEIIMsC5LQMAQQQPQwBZFmAnJMhgAACCCB6LM6QKwIEEED0MASQAWQA0cMQQAABZAAZQAABRA9DABlABhBAAAEEEEAGkAFkAAEEEEAGkEUBcjCGGKIHIAPIADKAAAIIIIAAMoAMIIAAAggggMzPHqMHIIAAAgggA8gAYogegAACyH4BiCF6AAIIIIAYslA9AAEEEEAM0QOQ5QJiiB6AAGKIHoAsFxBD9AAEEEP0AGS5gBiihyF6AAKIIcvVwxA9DNEDEEAM0SOG6GGIHoboYYgehlihhyF6GKKHIXoYokcYocMQPQzRo4aOGKIHI3QwQke7MnIyjNDBCB2tL8khSOJGX0nyyDwRo/eEeQRJkiRJkiRJkiRJkiRJkqSh3WqKDlhmQxBCAAAAAElFTkSuQmCC', sizes: '192x192', type: 'image/png' },
-            { src: 'data:image/png;base64,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', sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
-          ]
-        };
-        const blob    = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-        const mUrl    = URL.createObjectURL(blob);
-        const link    = document.createElement('link');
-        link.rel      = 'manifest';
-        link.href     = mUrl;
-        document.head.appendChild(link);
-      } catch(e) {}
-    })();
-
-    // Register inline Service Worker for true offline caching
-    if ('serviceWorker' in navigator) {
-      try {
-        const swSrc = `
-const CACHE = 'aac-v29';
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-self.addEventListener('fetch', e => {
-  // Always go network-first for version checks (bypass cache entirely)
-  if (e.request.url.includes('_uc=')) {
-    e.respondWith(fetch(e.request, { cache: 'no-store' }).catch(() => new Response('', { status: 408 })));
-    return;
-  }
-  e.respondWith(
-    caches.open(CACHE).then(c =>
-      c.match(e.request).then(cached => {
-        const fresh = fetch(e.request).then(r => {
-          if (r && r.status === 200) c.put(e.request, r.clone());
-          return r;
-        }).catch(() => cached);
-        return cached || fresh;
-      })
-    )
-  );
-});`;
-        const swBlob = new Blob([swSrc], { type: 'text/javascript' });
-        const swUrl  = URL.createObjectURL(swBlob);
-        navigator.serviceWorker.register(swUrl).catch(() => {});
-      } catch(e) {}
+    // Register a REAL service worker file (sw.js) for offline use.
+    // (Browsers reject blob: service workers, so it must be a file next to this page.)
+    // It only runs when the board is opened from the web link (https). The downloaded
+    // file opened straight from a computer is self-contained and needs no worker.
+    if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('./sw.js').catch(function () {});
+      });
     }
 
 
